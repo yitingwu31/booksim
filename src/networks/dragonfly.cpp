@@ -162,9 +162,25 @@ void DragonFlyNew::_ComputeSize( const Configuration &config )
   //  -- only one dimension between the group
   // _n == # of dimensions within a group
   // _p == # of processors within a router
-  // inter-group ports : _p
+  // inter-group ports : _p = h
   // terminal ports : _p
-  // intra-group ports : 2*_p - 1
+  // intra-group ports : 2*_p - 1 = a - 1
+  // =================
+  // SUMMARY
+  // =================
+  // p = # of terminal per router
+  // a = # of routers per group = 2p
+  // 
+  // g = # of groups = a * p + 1
+  // h = # of inter-group ports = p
+  // ----
+  // s = # of switches = a * g
+  // N = # of nodes = s * p = a * g * p = 2p * (2p^2 + 1) * p 
+  // c = # of channels = s * (a - 1 + p)
+  // k = radix of router = # of bi-ports = p + a - 1 + h = 4p - 1
+  // =================
+
+
   _p = config.GetInt( "k" );	// # of ports in each switch
   _n = config.GetInt( "n" );
 
@@ -196,7 +212,7 @@ void DragonFlyNew::_ComputeSize( const Configuration &config )
     _a = powi(_p, _n);
 
   _g = _a * _p + 1;
-  _nodes   = _a * _p * _g;
+  _nodes = _a * _p * _g;
 
   _num_of_switch = _nodes / _p;
   _channels = _num_of_switch * (_k - _p); 
