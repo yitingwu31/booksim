@@ -71,8 +71,9 @@ void FatTree::_ComputeSize( const Configuration& config )
 
   _k = config.GetInt( "k" );
   _n = config.GetInt( "n" );
+  _t = config.GetInt( "t" );
    
-  gK = _k; gN = _n;
+  gK = _k; gN = _n; gT = _t;
   
   _nodes = powi( _k, _n );
 
@@ -93,7 +94,7 @@ void FatTree::RegisterRoutingFunctions() {
 void FatTree::_BuildNet( const Configuration& config )
 {
  cout << "Fat Tree" << endl;
-  cout << " k = " << _k << " levels = " << _n << endl;
+  cout << " k = " << _k << " levels = " << _n << " t = " << _t << endl;
   cout << " each switch - total radix =  "<< 2*_k << endl;
   cout << " # of switches = "<<  _size << endl;
   cout << " # of channels = "<<  _channels << endl;

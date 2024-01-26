@@ -82,6 +82,7 @@ bool gPrintActivity;
 int gK;//radix
 int gN;//dimension
 int gC;//concentration
+int gT;
 
 int gNodes;
 
