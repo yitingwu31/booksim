@@ -283,33 +283,59 @@ void fattree_nca( const Router *r, const Flit *f,
 
   } else {
     
+    // pos = idx within level
+    // router_depth = which level 
+    // routers_per_neighborhood = k^(n-depth-1)
+
+    // total n level: 0 (top) to n-1 (bottom)
+    // N = # of terminal = k^n = 8
+    // router_per_level = k^(n-1) = 4
+    // S = # of switches = n * router_per_level
+    // channel_per_level = router_per_level * 2k
+    // C = # of channels = (n-1) * channel_per_level
+
     int dest = f->dest;
     int router_id = r->GetID(); //routers are numbered with smallest at the top level
     int routers_per_level = powi(gK, gN-1);
     int pos = router_id%routers_per_level;
     int router_depth  = router_id/ routers_per_level; //which level
+
+    // routers_per_neighborhood = how many switches are fully connected in the same level : 4, 2, 1
+    // router_neighborhood = neighborhood ID: 0000, 0011, 0123
+    // router_coverage = how many terminals are covered by router
+
     int routers_per_neighborhood = powi(gK,gN-router_depth-1);
     int router_neighborhood = pos/routers_per_neighborhood; //coverage of this tree
     int router_coverage = powi(gK, gN-router_depth);  //span of the tree from this router
     
 
-    //NCA reached going down
-    if(dest <(router_neighborhood+1)* router_coverage && 
-       dest >=router_neighborhood* router_coverage){
-      //down ports are numbered first
+    // NCA reached going down
+    // dest => node
+    // determin goes UP or DOWN
+    if(dest < (router_neighborhood+1) * router_coverage && 
+       dest >= router_neighborhood * router_coverage){
+      // goes DOWN
+      // down ports are numbered first
 
-      //ejection
+      // ejection
       if(router_depth == gN-1){
-	out_port = dest%gK;
+        // bottom layer
+	      out_port = dest % gK;
       } else {	
-	//find the down port for the destination
-	int router_branch_coverage = powi(gK, gN-(router_depth+1)); 
-	out_port = (dest-router_neighborhood* router_coverage)/router_branch_coverage;
+        // find the down port for the destination
+        // routers_per_neighborhood: 4, 2, 1
+        // out_port only be 0, 1 in k = 2 case
+        int router_branch_coverage = powi(gK, gN-(router_depth+1)); 
+        out_port = (dest - router_neighborhood * router_coverage) / router_branch_coverage;
       }
     } else {
-      //up ports are numbered last
-      assert(in_channel<gK);//came from a up channel
-      out_port = gK+RandomInt(gK-1);
+      // goes UP
+      // up ports are numbered last
+
+      // in_channel = 0, 1
+      // out_port = 2, 3
+      assert(in_channel < gK); //came from a up channel
+      out_port = gK + RandomInt(gK-1);
     }
   }  
   outputs->Clear( );

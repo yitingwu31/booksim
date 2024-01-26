@@ -175,7 +175,7 @@ void DragonFlyNew::_ComputeSize( const Configuration &config )
   // h = # of inter-group ports = p
   // ----
   // s = # of switches = a * g
-  // N = # of nodes = s * p = a * g * p = 2p * (2p^2 + 1) * p 
+  // N = # of terminals = s * p = a * g * p = 2p * (2p^2 + 1) * p 
   // c = # of channels = s * (a - 1 + p)
   // k = radix of router = # of bi-ports = p + a - 1 + h = 4p - 1
   // =================

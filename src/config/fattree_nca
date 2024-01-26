@@ -56,18 +56,21 @@ sim_count          = 1;
 sample_period  = 10000;  
 
 
-
-routing_function = nca;
 num_vcs     = 4;
 
 priority = none;
+// uniform / bitcomp
 traffic       = uniform;
 
-injection_rate = 0.6;
+// 50% flit injection rate
+injection_rate = 0.5;
 packet_size = 1;
 injection_rate_uses_flits=1;
 
+
+// rounting function calling fattree_nca
 topology = fattree;
+routing_function = nca;
 
 
 k  = 2;

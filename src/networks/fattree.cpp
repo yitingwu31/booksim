@@ -93,7 +93,14 @@ void FatTree::RegisterRoutingFunctions() {
 
 void FatTree::_BuildNet( const Configuration& config )
 {
- cout << "Fat Tree" << endl;
+  // total n level: 0 (top) to n-1 (bottom)
+  // N = # of terminal = k^n
+  // router_per_level = k^(n-1)
+  // S = # of switches = n * router_per_level
+  // channel_per_level = router_per_level * 2k
+  // C = # of channels = (n-1) * channel_per_level
+
+  cout << "Fat Tree" << endl;
   cout << " k = " << _k << " levels = " << _n << " t = " << _t << endl;
   cout << " each switch - total radix =  "<< 2*_k << endl;
   cout << " # of switches = "<<  _size << endl;
