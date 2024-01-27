@@ -73,8 +73,13 @@ topology = fattree;
 routing_function = nca;
 
 
-k  = 2;
-n  = 3;
-t = 1;
+// t: bandwidth tappering 
+k  = 8;
+n  = 4;
+t  = 1;     
 
 watch_out=-;
+
+
+// output file
+stats_out = stats_out/fattree_uni_t1.m;

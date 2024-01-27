@@ -307,35 +307,41 @@ void fattree_nca( const Router *r, const Flit *f,
     int routers_per_neighborhood = powi(gK,gN-router_depth-1);
     int router_neighborhood = pos/routers_per_neighborhood; //coverage of this tree
     int router_coverage = powi(gK, gN-router_depth);  //span of the tree from this router
-    
 
-    // NCA reached going down
-    // dest => node
-    // determin goes UP or DOWN
+    // ----------
+    // Determine whether to go UP or DOWN
+    // input: dest => node ID: index from 0 to (k^n - 1)
+    // output: out_port => port ID: index from 0 to (2k-1)
+    //                     each router has 2k ports
+    //         out_port index: DOWN port first then UP port
     if(dest < (router_neighborhood+1) * router_coverage && 
        dest >= router_neighborhood * router_coverage){
-      // goes DOWN
-      // down ports are numbered first
+      // goes DOWN (down ports are numbered first)
 
-      // ejection
       if(router_depth == gN-1){
-        // bottom layer
+        // bottom level => go DOWN = ejection to terminal
 	      out_port = dest % gK;
       } else {	
-        // find the down port for the destination
+        // go DOWN for other level => need to find the down port for the destination
         // routers_per_neighborhood: 4, 2, 1
-        // out_port only be 0, 1 in k = 2 case
+        // DOWN out port = 0, ... , k-1
         int router_branch_coverage = powi(gK, gN-(router_depth+1)); 
         out_port = (dest - router_neighborhood * router_coverage) / router_branch_coverage;
       }
     } else {
-      // goes UP
-      // up ports are numbered last
+      // goes UP (up ports are numbered last)
 
-      // in_channel = 0, 1
-      // out_port = 2, 3
+      // check in_channel came from UP in port = 0, ..., k-1
       assert(in_channel < gK); //came from a up channel
-      out_port = gK + RandomInt(gK-1);
+
+      if(router_depth == 1){
+        // level just below the top level
+        out_port = gK + RandomInt(gK/gT-1);
+      } else {
+        // UP out port = k, ..., 2k-1
+        out_port = gK + RandomInt(gK-1);
+      }
+
     }
   }  
   outputs->Clear( );
