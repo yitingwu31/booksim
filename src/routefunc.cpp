@@ -409,8 +409,8 @@ void fattree_anca( const Router *r, const Flit *f,
       //up ports are numbered last
       assert(in_channel<gK);//came from a up channel
       out_port = gK;
-      int random1 = RandomInt(gK-1); // Chose two ports out of the possible at random, compare loads, choose one.
-      int random2 = RandomInt(gK-1);
+      int random1 = (router_depth == 1) ? RandomInt(gK/gT-1) : RandomInt(gK-1); // Chose two ports out of the possible at random, compare loads, choose one.
+      int random2 = (router_depth == 1) ? RandomInt(gK/gT-1) : RandomInt(gK-1);
       if (r->GetUsedCredit(out_port + random1) > r->GetUsedCredit(out_port + random2)){
 	out_port = out_port + random2;
       }else{
