@@ -49,6 +49,7 @@
 #include "tree4.hpp"
 #include "qtree.hpp"
 #include "cmesh.hpp"
+#include "ga_table.hpp"
 
 
 
@@ -57,6 +58,7 @@ map<string, tRoutingFunction> gRoutingFunctionMap;
 /* Global information used by routing functions */
 
 int gNumVCs;
+GATable* ga_table;
 
 /* Add more functions here
  *
@@ -566,38 +568,16 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 //
 // End Balfour-Schultz
 //============================================================
-map<std::pair<int,int>, std::vector<int> > GA_path_table;
-// for (int i=0; i<gN; i++) {
-//   for (int j=0; j<gN; j++) {
-//     std::pair<int,int> key = std::make_pair(i, j);
-    
-//   }
-// }
 
-// int find_neighbor(int cur) {
-//   std::array<int, 2*gN> neighbor_list = {cur - 1, cur + 1, cur - gK, cur + gK, cur - powi(gK, 2), cur + powi(gK, 2)};
-//   int rand_idx = rand() % intList.size();
-//   return neighbor_list[rand_idx];
-// }
+// Return ga next output port
+int ga_next_mesh(int cur, int src, int dest) {
 
-int ga_next_mesh( int cur, int src, int dest)
-{
-  if ( cur == dest ) {
-    return 2*gN;  // Eject
+  if (cur == dest) {
+    return 2 * gN; // Eject
   }
 
-  // Find next node from LUT using (src, dest)
-  std::pair<int,int> key = std::make_pair(src, dest);
-  std::vector<int> target_path = GA_path_table[key];
-  int next_node;
-  for (auto it=target_path.begin(); it!=target_path.end(); ++it) {
-    if (*it == cur) {
-      next_node = *(++it);
-      break;
-    }
-  }
-  
-  // find next node dim 
+  int next_node = ga_table->find_next_node(cur, src, dest);
+
   // Dim 0: node id +- 1
   // Dim 1: node id += k
   // Dim 2: node id += k**(n-1)
@@ -609,6 +589,7 @@ int ga_next_mesh( int cur, int src, int dest)
     }
     dim++;
   } 
+
   // output port 
   if ( cur < next_node ) {
     return 2*dim;     // Right
@@ -619,7 +600,15 @@ int ga_next_mesh( int cur, int src, int dest)
 
 void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs, bool inject )
 {
-  int out_port = inject ? -1 : ga_next_mesh( r->GetID( ), f->src, f->dest);
+  int out_port;
+
+  if (inject) {
+    out_port = -1;
+  } else {
+    out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
+  }
+
+  // int out_port = inject ? -1 : ga_next_mesh( r->GetID( ), f->src, f->dest);
   
   int vcBegin = 0, vcEnd = gNumVCs-1;
   if ( f->type == Flit::READ_REQUEST ) {
