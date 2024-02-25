@@ -65,7 +65,7 @@ void KNCube::_ComputeSize( const Configuration &config )
 }
 
 void KNCube::RegisterRoutingFunctions() {
-
+  
 }
 void KNCube::_BuildNet( const Configuration &config )
 {

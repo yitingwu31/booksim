@@ -195,6 +195,7 @@ TrafficPattern * TrafficPattern::New(string const & pattern, int nodes,
     cout << "Error: Unknown traffic pattern: " << pattern << endl;
     exit(-1);
   }
+
   return result;
 }
 

@@ -565,7 +565,95 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 
 //
 // End Balfour-Schultz
-//=============================================================
+//============================================================
+map<std::pair<int,int>, std::vector<int> > GA_path_table;
+// for (int i=0; i<gN; i++) {
+//   for (int j=0; j<gN; j++) {
+//     std::pair<int,int> key = std::make_pair(i, j);
+    
+//   }
+// }
+
+// int find_neighbor(int cur) {
+//   std::array<int, 2*gN> neighbor_list = {cur - 1, cur + 1, cur - gK, cur + gK, cur - powi(gK, 2), cur + powi(gK, 2)};
+//   int rand_idx = rand() % intList.size();
+//   return neighbor_list[rand_idx];
+// }
+
+int ga_next_mesh( int cur, int src, int dest)
+{
+  if ( cur == dest ) {
+    return 2*gN;  // Eject
+  }
+
+  // Find next node from LUT using (src, dest)
+  std::pair<int,int> key = std::make_pair(src, dest);
+  std::vector<int> target_path = GA_path_table[key];
+  int next_node;
+  for (auto it=target_path.begin(); it!=target_path.end(); ++it) {
+    if (*it == cur) {
+      next_node = *(++it);
+      break;
+    }
+  }
+  
+  // find next node dim 
+  // Dim 0: node id +- 1
+  // Dim 1: node id += k
+  // Dim 2: node id += k**(n-1)
+  // dim = log10(next_node - cur) / log10(gK)
+  int dim = 0;
+  while (1) {
+    if ((next_node - cur) / powi(gK, dim) == 1) {
+      break;
+    }
+    dim++;
+  } 
+  // output port 
+  if ( cur < next_node ) {
+    return 2*dim;     // Right
+  } else {
+    return 2*dim + 1; // Left
+  }
+}
+
+void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs, bool inject )
+{
+  int out_port = inject ? -1 : ga_next_mesh( r->GetID( ), f->src, f->dest);
+  
+  int vcBegin = 0, vcEnd = gNumVCs-1;
+  if ( f->type == Flit::READ_REQUEST ) {
+    vcBegin = gReadReqBeginVC;
+    vcEnd = gReadReqEndVC;
+  } else if ( f->type == Flit::WRITE_REQUEST ) {
+    vcBegin = gWriteReqBeginVC;
+    vcEnd = gWriteReqEndVC;
+  } else if ( f->type ==  Flit::READ_REPLY ) {
+    vcBegin = gReadReplyBeginVC;
+    vcEnd = gReadReplyEndVC;
+  } else if ( f->type ==  Flit::WRITE_REPLY ) {
+    vcBegin = gWriteReplyBeginVC;
+    vcEnd = gWriteReplyEndVC;
+  }
+  assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+
+  if ( !inject && f->watch ) {
+    *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+	       << "Adding VC range [" 
+	       << vcBegin << "," 
+	       << vcEnd << "]"
+	       << " at output port " << out_port
+	       << " for flit " << f->id
+	       << " (input port " << in_channel
+	       << ", destination " << f->dest << ")"
+	       << "." << endl;
+  }
+  
+  outputs->Clear();
+
+  outputs->AddRange( out_port, vcBegin, vcEnd );
+}
+
 
 //=============================================================
 
@@ -2001,6 +2089,9 @@ void InitializeRoutingMap( const Configuration & config )
   gRoutingFunctionMap["adaptive_xy_yx_mesh"]          = &adaptive_xy_yx_mesh;
   // End Balfour-Schultz
   // ===================================================
+
+  
+  gRoutingFunctionMap["ga_mesh"] = &ga_mesh;
 
   gRoutingFunctionMap["dim_order_mesh"]  = &dim_order_mesh;
   gRoutingFunctionMap["dim_order_ni_mesh"]  = &dim_order_ni_mesh;
