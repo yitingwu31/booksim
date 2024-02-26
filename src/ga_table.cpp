@@ -1,7 +1,39 @@
 #include "ga_table.hpp"
 
 GATable::GATable() {
-    // _table = ...
+    std::vector<int> path_0_to_1, path_0_to_2, path_0_to_3, 
+                     path_1_to_0, path_1_to_2, path_1_to_3, 
+                     path_2_to_1, path_2_to_0, path_2_to_3, 
+                     path_3_to_1, path_3_to_2, path_3_to_0;
+
+    path_0_to_1.push_back(0); path_0_to_1.push_back(1);
+    path_0_to_2.push_back(0); path_0_to_2.push_back(1); path_0_to_2.push_back(2);
+    path_0_to_3.push_back(0); path_0_to_3.push_back(3);
+
+    path_1_to_0.push_back(1); path_1_to_0.push_back(0);
+    path_1_to_2.push_back(1); path_1_to_2.push_back(2);
+    path_1_to_3.push_back(1); path_1_to_3.push_back(2); path_1_to_3.push_back(3);
+
+    path_2_to_1.push_back(2); path_2_to_1.push_back(1);
+    path_2_to_0.push_back(2); path_2_to_0.push_back(1); path_2_to_0.push_back(0);
+    path_2_to_3.push_back(2); path_2_to_3.push_back(3);
+
+    path_3_to_1.push_back(3); path_3_to_1.push_back(2); path_3_to_1.push_back(1);
+    path_3_to_2.push_back(3); path_3_to_2.push_back(2);
+    path_3_to_0.push_back(3); path_3_to_0.push_back(0);
+
+    _table[std::make_pair(0, 1)] = path_0_to_1;
+    _table[std::make_pair(0, 2)] = path_0_to_2;
+    _table[std::make_pair(0, 3)] = path_0_to_3;
+    _table[std::make_pair(1, 0)] = path_1_to_0;
+    _table[std::make_pair(1, 2)] = path_1_to_2;
+    _table[std::make_pair(1, 3)] = path_1_to_3;
+    _table[std::make_pair(2, 1)] = path_2_to_1;
+    _table[std::make_pair(2, 0)] = path_2_to_0;
+    _table[std::make_pair(2, 3)] = path_2_to_3;
+    _table[std::make_pair(3, 1)] = path_3_to_1;
+    _table[std::make_pair(3, 2)] = path_3_to_2;
+    _table[std::make_pair(3, 0)] = path_3_to_0;
 }
 
 int GATable::find_next_node( int cur, int src, int dest)
