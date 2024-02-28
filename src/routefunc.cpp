@@ -589,7 +589,7 @@ int ga_next_mesh(int cur, int src, int dest) {
   // dim = log10(next_node - cur) / log10(gK)
   int dim = 0;
   while (1) {
-    if ((next_node - cur) / powi(gK, dim) == 1) {
+    if (abs(next_node - cur) / powi(gK, dim) == 1) {
       break;
     }
     dim++;
@@ -616,6 +616,7 @@ void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs
     cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
     cout << "flit src = " << f->src << " dest = " << f->dest << endl;
     out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
+    cout << "out port is " << out_port << endl;
   }
 
   int vcBegin = 0, vcEnd = gNumVCs-1;
@@ -646,7 +647,7 @@ void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs
 	       << "." << endl;
   }
 
-  cout << "out port is " << out_port << endl;
+  
   
   outputs->Clear();
 

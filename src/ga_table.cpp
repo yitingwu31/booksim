@@ -22,20 +22,20 @@ GATable::GATable() {
                      path_3_to_1, path_3_to_2, path_3_to_0;
 
     path_0_to_1.push_back(0); path_0_to_1.push_back(1);
-    path_0_to_2.push_back(0); path_0_to_2.push_back(1); path_0_to_2.push_back(2);
-    path_0_to_3.push_back(0); path_0_to_3.push_back(3);
+    path_0_to_2.push_back(0); path_0_to_2.push_back(2); 
+    path_0_to_3.push_back(0); path_0_to_3.push_back(1); path_0_to_3.push_back(3);
 
     path_1_to_0.push_back(1); path_1_to_0.push_back(0);
-    path_1_to_2.push_back(1); path_1_to_2.push_back(2);
-    path_1_to_3.push_back(1); path_1_to_3.push_back(2); path_1_to_3.push_back(3);
+    path_1_to_2.push_back(1); path_1_to_2.push_back(0); path_1_to_2.push_back(2);
+    path_1_to_3.push_back(1); path_1_to_3.push_back(3);
 
-    path_2_to_1.push_back(2); path_2_to_1.push_back(1);
-    path_2_to_0.push_back(2); path_2_to_0.push_back(1); path_2_to_0.push_back(0);
+    path_2_to_1.push_back(2); path_2_to_1.push_back(3); path_2_to_1.push_back(1);
+    path_2_to_0.push_back(2); path_2_to_0.push_back(3); path_2_to_0.push_back(1); path_2_to_0.push_back(0);
     path_2_to_3.push_back(2); path_2_to_3.push_back(3);
 
-    path_3_to_1.push_back(3); path_3_to_1.push_back(2); path_3_to_1.push_back(1);
+    path_3_to_1.push_back(3); path_3_to_1.push_back(2); path_3_to_1.push_back(0);  path_3_to_1.push_back(1);
     path_3_to_2.push_back(3); path_3_to_2.push_back(2);
-    path_3_to_0.push_back(3); path_3_to_0.push_back(0);
+    path_3_to_0.push_back(3); path_3_to_0.push_back(1); path_3_to_0.push_back(0);
 
     
     _table[std::make_pair(0, 1)] = path_0_to_1;
