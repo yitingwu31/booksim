@@ -918,11 +918,9 @@ void TrafficManager::_GeneratePacket( int source, int stype,
                        << "." << endl;
         }
         if (f->watch_path) {
-            *gWatchFlitPath << GetSimTime() << " | "
-                       << "node" << source << " | "
-                       << "Enqueuing flit " << f->id
-                       << " (packet " << f->pid
-                       << ") at time " << time
+            *gWatchFlitPath << "Flit " << f->id
+                       << " (packet " << f->pid << ") | "
+                       << "Enqueuing into src node " << source
                        << "." << endl;
         }
 
@@ -988,12 +986,10 @@ void TrafficManager::_Step( )
                                << "." << endl;
                 }
                 if (f->watch_path) {
-                    *gWatchFlitPath << GetSimTime() << " | "
-                               << "node" << n << " | "
-                               << "Ejecting flit " << f->id
-                               << " (packet " << f->pid << ")"
-                               << " from VC " << f->vc
-                               << "." << endl;
+                    *gWatchFlitPath << "Flit " << f->id
+                       << " (packet " << f->pid << ") | "
+                       << "Ejecting from dest node " << n
+                       << "." << endl;
                 }
                 flits[subnet].insert(make_pair(n, f));
                 if((_sim_state == warming_up) || (_sim_state == running)) {

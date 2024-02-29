@@ -305,16 +305,16 @@ bool IQRouter::_ReceiveFlits( )
 #endif
 
       if(f->watch) {
-	*gWatchOut << GetSimTime() << " | " << FullName() << " | "
-		   << "Received flit " << f->id
-		   << " from channel at input " << input
-		   << "." << endl;
+        *gWatchOut << GetSimTime() << " | " << FullName() << " | "
+                  << "Received flit " << f->id
+                  << " from channel at input " << input
+                  << "." << endl;
       }
       if (f->watch_path) {
-  *gWatchFlitPath << GetSimTime() << " | " << FullName() << " | "
-		   << "Received flit " << f->id
-		   << " from channel at input " << input
-		   << "." << endl;
+        *gWatchFlitPath << "Flit " << f->id
+                       << " (packet " << f->pid << ") | "
+                       << "Reach router node " << FullName()
+                       << "." << endl;
       }
       _in_queue_flits.insert(make_pair(input, f));
       activity = true;
