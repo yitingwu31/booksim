@@ -69,6 +69,7 @@ public:
 
   int  hops;
   bool watch;
+  bool watch_path;
   int  subnetwork;
   
   // intermediate destination (if any)
