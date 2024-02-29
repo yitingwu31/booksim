@@ -284,6 +284,7 @@ BookSimConfig::BookSimConfig( )
   AddStrField("watch_transactions", "");
 
   AddStrField("watch_out", "");
+  AddStrField("watch_path_out", "");
 
   AddStrField("stats_out", "");
 

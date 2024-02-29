@@ -72,6 +72,7 @@ void Flit::Reset()
   pid       = -1 ;
   hops      = 0 ;
   watch     = false ;
+  watch_path = false;
   record    = false ;
   intm = 0;
   src = -1;

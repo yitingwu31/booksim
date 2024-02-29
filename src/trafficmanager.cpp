@@ -616,6 +616,7 @@ TrafficManager::~TrafficManager( )
     }
   
     if(gWatchOut && (gWatchOut != &cout)) delete gWatchOut;
+    if(gWatchFlitPath && (gWatchFlitPath != &cout)) delete gWatchFlitPath;
     if(_stats_out && (_stats_out != &cout)) delete _stats_out;
 
 #ifdef TRACK_FLOWS
@@ -794,6 +795,7 @@ void TrafficManager::_GeneratePacket( int source, int stype,
     int packet_destination = _traffic_pattern[cl]->dest(source);
     bool record = false;
     bool watch = gWatchOut && (_packets_to_watch.count(pid) > 0);
+    bool watch_path = gWatchFlitPath && (_packets_to_watch.count(pid) > 0);
     if(_use_read_write[cl]){
         if(stype > 0) {
             if (stype == 1) {
@@ -858,6 +860,7 @@ void TrafficManager::_GeneratePacket( int source, int stype,
         assert(_cur_id);
         f->pid    = pid;
         f->watch  = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
+        f->watch_path = watch_path | (gWatchFlitPath && (_flits_to_watch.count(f->id) > 0));
         f->subnetwork = subnetwork;
         f->src    = source;
         f->ctime  = time;
@@ -908,6 +911,14 @@ void TrafficManager::_GeneratePacket( int source, int stype,
 
         if ( f->watch ) { 
             *gWatchOut << GetSimTime() << " | "
+                       << "node" << source << " | "
+                       << "Enqueuing flit " << f->id
+                       << " (packet " << f->pid
+                       << ") at time " << time
+                       << "." << endl;
+        }
+        if (f->watch_path) {
+            *gWatchFlitPath << GetSimTime() << " | "
                        << "node" << source << " | "
                        << "Enqueuing flit " << f->id
                        << " (packet " << f->pid
@@ -970,6 +981,14 @@ void TrafficManager::_Step( )
             if ( f ) {
                 if(f->watch) {
                     *gWatchOut << GetSimTime() << " | "
+                               << "node" << n << " | "
+                               << "Ejecting flit " << f->id
+                               << " (packet " << f->pid << ")"
+                               << " from VC " << f->vc
+                               << "." << endl;
+                }
+                if (f->watch_path) {
+                    *gWatchFlitPath << GetSimTime() << " | "
                                << "node" << n << " | "
                                << "Ejecting flit " << f->id
                                << " (packet " << f->pid << ")"
