@@ -12,10 +12,11 @@ ostream& operator<<(ostream& os,
     return os;
 }
 
+// TODO: Make a class for path: vector, current node, src, dest
 
 
 GATable::GATable() {
-    cout << "calling constructor" << endl;
+    cout << "calling GA Table constructor" << endl;
     std::vector<int> path_0_to_1, path_0_to_2, path_0_to_3, 
                      path_1_to_0, path_1_to_2, path_1_to_3, 
                      path_2_to_1, path_2_to_0, path_2_to_3, 
@@ -55,9 +56,9 @@ GATable::GATable() {
 
 int GATable::find_next_node( int cur, int src, int dest)
 {
-    cout << "------ call find next node " << endl;
+    // cout << "------ call find next node " << endl;
     std::vector<int> target_path = get_path(src, dest);
-    cout << "target path: " << target_path << endl;
+    // cout << "target path: " << target_path << endl;
     int next_node = -1;
     for (auto it=target_path.begin(); it!=target_path.end(); ++it) {
         if (*it == cur) {

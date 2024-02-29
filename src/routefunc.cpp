@@ -572,8 +572,8 @@ void xy_yx_mesh( const Router *r, const Flit *f,
 // Return ga next output port
 int ga_next_mesh(int cur, int src, int dest) {
 
-  cout << "calling ga next!" << endl;
-  cout << "cur: " << cur << " (" << src << " to " << dest << ")" << endl;
+  // cout << "calling ga next!" << endl;
+  // cout << "cur: " << cur << " (" << src << " to " << dest << ")" << endl;
 
   if (cur == dest) {
     return 2 * gN; // Eject
@@ -581,7 +581,7 @@ int ga_next_mesh(int cur, int src, int dest) {
 
   int next_node = ga_table->find_next_node(cur, src, dest);
 
-  cout << "next node is " << next_node << endl;
+  // cout << "next node is " << next_node << endl;
 
   // Dim 0: node id +- 1
   // Dim 1: node id += k
@@ -611,12 +611,12 @@ void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs
   if (inject) {
     out_port = -1;
   } else {
-    cout << "================" << endl;
-    cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
-    cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
-    cout << "flit src = " << f->src << " dest = " << f->dest << endl;
+    // cout << "================" << endl;
+    // cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
+    // cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
+    // cout << "flit src = " << f->src << " dest = " << f->dest << endl;
     out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
-    cout << "out port is " << out_port << endl;
+    // cout << "out port is " << out_port << endl;
   }
 
   int vcBegin = 0, vcEnd = gNumVCs-1;
