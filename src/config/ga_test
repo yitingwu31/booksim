@@ -66,4 +66,5 @@ sim_type = latency;
 injection_rate = 0.01;
 
 watch_file = watchlists/watch_ga_1;
-watch_out = -;
+// watch_out = -;
+watch_path_out = -;

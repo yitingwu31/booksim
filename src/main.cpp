@@ -90,7 +90,7 @@ int gNodes;
 bool gTrace;
 
 ostream * gWatchOut;
-
+ostream * gWatchFlitPath;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -178,6 +178,15 @@ int main( int argc, char **argv )
     gWatchOut = &cout;
   } else {
     gWatchOut = new ofstream(watch_out_file.c_str());
+  }
+
+  string watch_path_out_file = config.GetStr( "watch_path_out" );
+  if(watch_path_out_file == "") {
+    gWatchFlitPath = NULL;
+  } else if(watch_path_out_file == "-") {
+    gWatchFlitPath = &cout;
+  } else {
+    gWatchFlitPath = new ofstream(watch_path_out_file.c_str());
   }
   
 
