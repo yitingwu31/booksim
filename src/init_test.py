@@ -116,6 +116,6 @@ if __name__ == "__main__":
 
     ga_init = GA_init(k,n,b, algos_available, injection_rates=injec_rates)
     ga_init.fill()
-    # ga_init.display_table()
+    ga_init.display_table()
     ga_init.save_to_pickle('path_table.pkl')
     # print(f"there are supposed to be {source_dest_pairs} source destination pairs")
