@@ -16,7 +16,7 @@ ostream& operator<<(ostream& os,
 
 
 GATable::GATable() {
-    cout << "calling GA Table constructor" << endl;
+    // cout << "calling GA Table constructor" << endl;
     std::vector<int> path_0_to_1, path_0_to_2, path_0_to_3, 
                      path_1_to_0, path_1_to_2, path_1_to_3, 
                      path_2_to_1, path_2_to_0, path_2_to_3, 
@@ -44,7 +44,7 @@ GATable::GATable() {
     _table[std::make_pair(0, 3)] = path_0_to_3;
     _table[std::make_pair(1, 0)] = path_1_to_0;
     _table[std::make_pair(1, 2)] = path_1_to_2;
-    cout << path_1_to_2 << endl;
+    // cout << path_1_to_2 << endl;
     _table[std::make_pair(1, 3)] = path_1_to_3;
     _table[std::make_pair(2, 1)] = path_2_to_1;
     _table[std::make_pair(2, 0)] = path_2_to_0;

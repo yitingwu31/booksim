@@ -30,11 +30,11 @@
 // Topology
 
 topology = mesh;
-k = 2;
+k = 4;
 n = 2;
 
 // Routing
-routing_function = ga;
+routing_function = min_adapt;
 
 // Flow control
 num_vcs     = 8;
@@ -56,14 +56,14 @@ output_speedup    = 1;
 internal_speedup  = 1.0;
 
 // Traffic
-traffic = transpose;
-packet_size = 5;
+traffic = uniform;
+packet_size = 2;
 
 
 // Simulation
 sim_type = latency;
 
-injection_rate = 0.01;
+injection_rate = 0.2;
 
 watch_file = watchlists/watch_ga_1;
 // watch_out = -;
