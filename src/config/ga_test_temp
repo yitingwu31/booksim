@@ -1,8 +1,8 @@
 topology = mesh;
 k = 2;
-n = 2;
+n = 3;
 
-routing_function = romm_ni;
+routing_function = min_adapt;
 
 // Flow control
 num_vcs     = 8;
@@ -28,9 +28,9 @@ packet_size = 2;
 
 sim_type = latency;
 
-sample_period  = 18000;  
+sample_period  = 234000;  
 
-injection_rate = 0.38000000000000006;
+injection_rate = 0.9800000000000006;
 
 watch_file = watchlists/watch_ga_1;
-watch_path_out = stats_out/temp_romm_ni;
+watch_path_out = stats_out/temp_min_adapt;

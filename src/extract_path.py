@@ -25,9 +25,15 @@ class Flit_path_table:
         dest = int(line.split()[-1][:-1])
       else:
         mid_fullname = line.split()[-1][:-1].split("/")[-1]
-        yid = int(mid_fullname.split("_")[1])
-        xid = int(mid_fullname.split("_")[2])
-        mid = yid * self.k + xid
+        if self.n == 2:
+          yid = int(mid_fullname.split("_")[1])
+          xid = int(mid_fullname.split("_")[2])
+          mid = yid * self.k + xid
+        if self.n == 3:
+          zid = int(mid_fullname.split("_")[1])
+          yid = int(mid_fullname.split("_")[2])
+          xid = int(mid_fullname.split("_")[3])
+          mid = zid * self.k * self.k + yid * self.k + xid
         self.flit_path_map[flit_id].append(mid)
     
     # These assertions do not always pass, even with correct path extraction 

@@ -19,7 +19,7 @@ class GA_init():
         self._table = [{} for _ in range(2**b)]
 
     def fill(self):
-        for i in tqdm(range(2**self.b), desc="Processing", unit="iteration"):
+        for i in tqdm(range(2**self.b), desc="Generating Path Table", unit="Rows"):
             cur_inj_rate = self.injection_rates
             cur_time_run = 10000
             traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
@@ -41,11 +41,13 @@ class GA_init():
                         sd_pair = (un_path[0], un_path[-1])
                         self._table[i][sd_pair] = un_path
                         # print(f"Configuration {i}, SD pair {sd_pair}: {self._table[i][sd_pair]}")
-                cur_inj_rate += 0.01
-                cur_time_run += 1000
+                if cur_inj_rate < 0.98:
+                    cur_inj_rate += 0.02
+                cur_time_run += 4000
                 pattern_to_pick +=1
                 if (pattern_to_pick == len(traffic_patterns)):
                     pattern_to_pick = 0
+                print(f"Found {len(self._table[i])} SD Pairs of {self.total_combs}")
 
     def display_table(self):
         for row in self._table:
@@ -105,17 +107,17 @@ watch_path_out = stats_out/temp_{route_algo};
 
 if __name__ == "__main__":
     k = 2 # Nodes per dimension
-    n = 2 # Dimension of mesh
+    n = 3 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 
     source_dest_pairs = ((k ** n) - 1)*(k ** n)
+    # print(f"there are supposed to be {source_dest_pairs} source destination pairs")
 
-    injec_rates = 0.3
+    injec_rates = 0.2 #default to 0.3?
 
     algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
 
     ga_init = GA_init(k,n,b, algos_available, injection_rates=injec_rates)
     ga_init.fill()
     ga_init.display_table()
-    ga_init.save_to_pickle('path_table.pkl')
-    # print(f"there are supposed to be {source_dest_pairs} source destination pairs")
+    ga_init.save_to_pickle('path_table_3d.pkl')
