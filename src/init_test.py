@@ -4,8 +4,11 @@ import os
 from tqdm import tqdm
 from extract_path import Flit_path_table
 
+algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
+injec_start_rate = 0.2 #default to 0.3?
+
 class GA_init():
-    def __init__(self, k, n, b, rt, injection_rates):
+    def __init__(self, k, n, b, rt=algos_available, injection_rates=injec_start_rate):
         self.k = k
         self.n = n
         self.b = b
@@ -113,11 +116,7 @@ if __name__ == "__main__":
     source_dest_pairs = ((k ** n) - 1)*(k ** n)
     # print(f"there are supposed to be {source_dest_pairs} source destination pairs")
 
-    injec_rates = 0.2 #default to 0.3?
-
-    algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
-
-    ga_init = GA_init(k,n,b, algos_available, injection_rates=injec_rates)
+    ga_init = GA_init(k,n,b)
     ga_init.fill()
     ga_init.display_table()
-    ga_init.save_to_pickle('path_table_3d.pkl')
+    ga_init.save_to_pickle(f'path_table_n{n}_k{k}.pkl')

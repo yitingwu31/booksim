@@ -4,6 +4,7 @@ from numpy.random import rand
 import numpy as np
 import random
 from init_test import GA_init
+import pickle
 
 
 class GA_algo:
@@ -16,8 +17,13 @@ class GA_algo:
      self.n_iter = n_iter
      self.r_cross = r_cross
      self.r_mut = r_mut
-     self.ga_table = GA_init(k, n, n_bits, rt, injection_rates).fill()._table #TODO later: expand to all rt, injection rates
-  
+    #  self.ga_table = GA_init(k, n, n_bits).fill()._table #TODO later: expand to all rt, injection rates
+     self.ga_table = self.load_from_pickle("path_table.pkl")
+
+  def load_from_pickle(self, filepath):
+    with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
+        return pickle.load(file)
+    
   def decode(chromosome):
     'decode "111" "000" into paths'
     paths = list()
@@ -128,19 +134,22 @@ class GA_algo:
     chromosome = [''.join(str(bit) for bit in bits) for bits in bitstrings_array] #join as one string
     return chromosome
 
-# define range for input
-k = 4
-n = 2
-n_iter = 100 # num generations
-n_chrom = 100  #population size
-n_bits = 3
-r_cross = 0.5 #crossover rate
-r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
+if __name__ == "__main__":
+  # define range for input
+  k = 2
+  n = 2
+  n_iter = 100 # num generations
+  n_chrom = 100  #population size
+  n_bits = 3
+  r_cross = 0.5 #crossover rate
+  r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
 
-ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
-best_score, best_chrom = ga1.run_GA()
+  ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
+  print(ga1.ga_table)
+  # best_score, best_chrom = ga1.run_GA()
 
-#TODO: convert this best chrom chart into a set of routes
-deterministic_path = GA_algo.decode(best_chrom)
-#TODO: run booksim on this "best" route
 
+
+  #TODO: convert this best chrom chart into a set of routes
+  # deterministic_path = GA_algo.decode(best_chrom)
+  #TODO: run booksim on this "best" route
