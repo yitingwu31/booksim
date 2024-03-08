@@ -41,7 +41,15 @@ class Flit_path_table:
     unipaths = set(tuple(i) for i in paths)
     return unipaths
 
+
+'''
+Helper code to extract flit latency and check saturation
+'''
+class Booksim_log:
+  def __init__(self, filename): 
+    self.extract_log(filename)
   
+  def extract_log(self):
 
 
 if __name__ == "__main__":
