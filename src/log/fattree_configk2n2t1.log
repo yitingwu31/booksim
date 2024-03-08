@@ -1,4 +1,5 @@
-// $Id$
+BEGIN Configuration File: config/fattree_nca
+// $Id: dragonflyconfig 3555 2011-05-16 23:37:55Z dub $
 
 // Copyright (c) 2007-2015, Trustees of The Leland Stanford Junior University
 // All rights reserved.
@@ -24,47 +25,68 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-//8X8 mesh with 20 flits per packet under injection mode
-//injection rate here is packet per cycle, NOT flit per cycle
 
-// Topology
+hold_switch_for_packet=1;
 
-topology = mesh;
-k = 4;
-n = 2;
+vc_buf_size = 16;
 
-// Routing
-routing_function = min_adapt;
 
-// Flow control
-num_vcs     = 8;
-vc_buf_size = 8;
-wait_for_tail_credit = 1;
+wait_for_tail_credit = 0;
 
+//
 // Router architecture
-vc_allocator = islip;
-sw_allocator = islip;
+//
+vc_allocator = separable_input_first; 
+sw_allocator = separable_input_first;
 alloc_iters  = 1;
 
 credit_delay   = 2;
 routing_delay  = 0;
 vc_alloc_delay = 1;
 sw_alloc_delay = 1;
+st_final_delay = 1;
 
-input_speedup     = 2;
+input_speedup     = 1;
 output_speedup    = 1;
 internal_speedup  = 1.0;
 
-// Traffic
-traffic = uniform;
-packet_size = 2;
+
+warmup_periods = 3;
+sim_count          = 1;
+
+sample_period  = 10000;  
 
 
-// Simulation
-sim_type = latency;
+num_vcs     = 4;
 
-injection_rate = 0.2;
+priority = none;
+// uniform / bitcomp
+traffic       = uniform;   //or tornado
 
-watch_file = watchlists/watch_ga_1;
-// watch_out = -;
-watch_path_out = stats_out/out;
+// 50% flit injection rate
+injection_rate = 0.5;
+packet_size = 1;
+injection_rate_uses_flits=1;
+
+
+// rounting function calling fattree_nca
+topology = fattree;
+routing_function = nca;
+
+
+// t: bandwidth tappering 
+k  = 8;
+n  = 4;
+t  = 1;     
+
+watch_out=-;
+
+
+// output file
+stats_out = stats_out/fattree_uni_t1.m;;END Configuration File: config/fattree_nca
+Fat Tree
+ k = 8 levels = 4 t = 1
+ each switch - total radix =  16
+ # of switches = 2048
+ # of channels = 24576
+ # of nodes ( size of network ) = 4096

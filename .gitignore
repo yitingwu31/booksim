@@ -4,3 +4,8 @@
 .Apple*
 .DS_Store
 .vscode/
+stats_out/
+path_table.json
+log/
+config/ga_test_temp
+__pycache__/
