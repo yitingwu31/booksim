@@ -110,7 +110,7 @@ watch_path_out = stats_out/temp_{route_algo};
 
 if __name__ == "__main__":
     k = 2 # Nodes per dimension
-    n = 3 # Dimension of mesh
+    n = 2 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 
     source_dest_pairs = ((k ** n) - 1)*(k ** n)

@@ -138,8 +138,8 @@ if __name__ == "__main__":
   # define range for input
   k = 2
   n = 2
-  n_iter = 100 # num generations
-  n_chrom = 100  #population size
+  n_iter = 6 # num generations
+  n_chrom = 8  #population size
   n_bits = 3
   r_cross = 0.5 #crossover rate
   r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
