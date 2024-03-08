@@ -1,0 +1,160 @@
+BEGIN Configuration File: config/fattree_nca
+// $Id: dragonflyconfig 3555 2011-05-16 23:37:55Z dub $
+
+// Copyright (c) 2007-2015, Trustees of The Leland Stanford Junior University
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// Redistributions of source code must retain the above copyright notice, this
+// list of conditions and the following disclaimer.
+// Redistributions in binary form must reproduce the above copyright notice,
+// this list of conditions and the following disclaimer in the documentation
+// and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+
+
+hold_switch_for_packet=1;
+
+vc_buf_size = 16;
+
+
+wait_for_tail_credit = 0;
+
+//
+// Router architecture
+//
+vc_allocator = separable_input_first; 
+sw_allocator = separable_input_first;
+alloc_iters  = 1;
+
+credit_delay   = 2;
+routing_delay  = 0;
+vc_alloc_delay = 1;
+sw_alloc_delay = 1;
+st_final_delay = 1;
+
+input_speedup     = 1;
+output_speedup    = 1;
+internal_speedup  = 1.0;
+
+
+warmup_periods = 3;
+sim_count          = 1;
+
+sample_period  = 10000;  
+
+
+num_vcs     = 4;
+
+priority = none;
+// uniform / bitcomp
+traffic       = uniform;   //or tornado
+
+// 
+injection_rate = 0.7;
+packet_size = 1;
+injection_rate_uses_flits=1;
+
+
+// rounting function calling fattree_nca
+topology = fattree;
+routing_function = nca;
+
+
+// t: bandwidth tappering 
+k  = 8;
+n  = 4;
+t  = 1;     
+
+watch_out=-;
+
+
+// output file
+stats_out = stats_out/fattree_uni_t1.m;;END Configuration File: config/fattree_nca
+Fat Tree
+ k = 8 levels = 4 t = 1
+ each switch - total radix =  16
+ # of switches = 2048
+ # of channels = 24576
+ # of nodes ( size of network ) = 4096
+Class 0:
+Packet latency average = 405.803
+	minimum = 6
+	maximum = 1481
+Network latency average = 247.971
+	minimum = 6
+	maximum = 958
+Slowest packet = 4736796
+Flit latency average = 247.971
+	minimum = 6
+	maximum = 958
+Slowest flit = 16319331
+Fragmentation average = 0
+	minimum = 0
+	maximum = 0
+Injected packet rate average = 0.66671
+	minimum = 0.6314 (at node 3395)
+	maximum = 0.6893 (at node 1256)
+Accepted packet rate average = 0.649724
+	minimum = 0.6226 (at node 2688)
+	maximum = 0.6786 (at node 2918)
+Injected flit rate average = 0.66671
+	minimum = 0.6314 (at node 3395)
+	maximum = 0.6893 (at node 1256)
+Accepted flit rate average= 0.649724
+	minimum = 0.6226 (at node 2688)
+	maximum = 0.6786 (at node 2918)
+Injected packet length average = 1
+Accepted packet length average = 1
+Total in-flight flits = 697142 (0 measured)
+latency change    = 1
+throughput change = 1
+Class 0:
+Packet latency average = 718.878
+	minimum = 6
+	maximum = 2310
+Network latency average = 255.156
+	minimum = 6
+	maximum = 1173
+Slowest packet = 4736796
+Flit latency average = 255.156
+	minimum = 6
+	maximum = 1173
+Slowest flit = 43828294
+Fragmentation average = 0
+	minimum = 0
+	maximum = 0
+Injected packet rate average = 0.661334
+	minimum = 0.63605 (at node 3417)
+	maximum = 0.6816 (at node 1880)
+Accepted packet rate average = 0.652209
+	minimum = 0.6333 (at node 836)
+	maximum = 0.67095 (at node 916)
+Injected flit rate average = 0.661334
+	minimum = 0.63605 (at node 3417)
+	maximum = 0.6816 (at node 1880)
+Accepted flit rate average= 0.652209
+	minimum = 0.6333 (at node 836)
+	maximum = 0.67095 (at node 916)
+Injected packet length average = 1
+Accepted packet length average = 1
+Total in-flight flits = 748869 (0 measured)
+latency change    = 0.435506
+throughput change = 0.0038108
+Average latency for class 0 exceeded 500 cycles. Aborting simulation.
+Too many sample periods needed to converge
+Simulation unstable, ending ...
+Total run time 5202.83
