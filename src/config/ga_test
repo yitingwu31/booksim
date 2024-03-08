@@ -68,3 +68,4 @@ injection_rate = 0.2;
 watch_file = watchlists/watch_ga_1;
 // watch_out = -;
 watch_path_out = stats_out/out;
+GA_path_file = decoded_paths.txt;
