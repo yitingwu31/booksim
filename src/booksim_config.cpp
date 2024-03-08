@@ -158,6 +158,8 @@ BookSimConfig::BookSimConfig( )
 
   AddStrField( "traffic", "uniform" );
 
+  _int_map["neighbor_step"] = 1;
+
   _int_map["class_priority"] = 0;
   AddStrField("class_priority", ""); // workaraound to allow for vector specification
 
