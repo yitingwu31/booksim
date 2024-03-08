@@ -1,8 +1,8 @@
 topology = mesh;
 k = 2;
-n = 3;
+n = 2;
 
-routing_function = min_adapt;
+routing_function = romm_ni;
 
 // Flow control
 num_vcs     = 8;
@@ -23,14 +23,15 @@ input_speedup     = 2;
 output_speedup    = 1;
 internal_speedup  = 1.0;
 
-traffic = uniform;
-packet_size = 2;
+traffic = bitrev;
+neighbor_step = 1;
+packet_size = 5;
 
 sim_type = latency;
 
-sample_period  = 234000;  
+sample_period  = 38000;  
 
-injection_rate = 0.9800000000000006;
+injection_rate = 0.3400000000000001;
 
 watch_file = watchlists/watch_ga_1;
-watch_path_out = stats_out/temp_min_adapt;
+watch_path_out = watchlists/temp_bitrev_romm_ni;

@@ -31,6 +31,8 @@
 #include "random_utils.hpp"
 #include "traffic.hpp"
 
+
+
 TrafficPattern::TrafficPattern(int nodes)
 : _nodes(nodes)
 {
@@ -48,6 +50,8 @@ void TrafficPattern::reset()
 TrafficPattern * TrafficPattern::New(string const & pattern, int nodes, 
 				     Configuration const * const config)
 {
+
+  int _step = config->GetInt("neighbor_step");
   string pattern_name;
   string param_str;
   size_t left = pattern.find_first_of('(');
@@ -130,7 +134,7 @@ TrafficPattern * TrafficPattern::New(string const & pattern, int nodes,
     }
     result = new BadPermDFlyTrafficPattern(nodes, k, n);
   } else if((pattern_name == "tornado") || (pattern_name == "neighbor") ||
-	    (pattern_name == "badperm_yarc")) {
+	    (pattern_name == "custom_neighbor") || (pattern_name == "badperm_yarc")) {
     bool missing_params = false;
     int k = -1;
     if(params.size() < 1) {
@@ -168,6 +172,9 @@ TrafficPattern * TrafficPattern::New(string const & pattern, int nodes,
     }
     if(pattern_name == "tornado") {
       result = new TornadoTrafficPattern(nodes, k, n, xr);
+    } else if(pattern_name == "custom_neighbor") {
+      // cout << _step << endl;
+      result = new CustomNeighborTrafficPattern(nodes, k, n, xr, _step);
     } else if(pattern_name == "neighbor") {
       result = new NeighborTrafficPattern(nodes, k, n, xr);
     } else if(pattern_name == "badperm_yarc") {
@@ -307,6 +314,27 @@ int TornadoTrafficPattern::dest(int source)
   }
   return result;
 }
+
+
+CustomNeighborTrafficPattern::CustomNeighborTrafficPattern(int nodes, int k, int n, int xr, int step)
+  : DigitPermutationTrafficPattern(nodes, k, n, xr)
+{
+  _step = step;
+  // cout << step << endl;
+}
+
+int CustomNeighborTrafficPattern::dest(int source)
+{
+  assert((source >= 0) && (source < _nodes));
+  // cout << source << " " << _step << " " << source + _step - _nodes << endl;
+  if (source + _step >= _nodes) {
+    return source + _step - _nodes;
+  } else {
+    return source + _step;
+  }
+}
+
+
 
 NeighborTrafficPattern::NeighborTrafficPattern(int nodes, int k, int n, int xr)
   : DigitPermutationTrafficPattern(nodes, k, n, xr)

@@ -96,6 +96,13 @@ public:
   virtual int dest(int source);
 };
 
+class CustomNeighborTrafficPattern : public DigitPermutationTrafficPattern {
+public:
+  int _step;
+  CustomNeighborTrafficPattern(int nodes, int k, int n, int xr = 1, int step = 1);
+  virtual int dest(int source);
+};
+
 class NeighborTrafficPattern : public DigitPermutationTrafficPattern {
 public:
   NeighborTrafficPattern(int nodes, int k, int n, int xr = 1);

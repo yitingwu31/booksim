@@ -35,21 +35,13 @@ class Flit_path_table:
           xid = int(mid_fullname.split("_")[3])
           mid = zid * self.k * self.k + yid * self.k + xid
         self.flit_path_map[flit_id].append(mid)
-    
-    # These assertions do not always pass, even with correct path extraction 
-    # assert self.flit_path_map[flit_id][0] == src
-    # assert self.flit_path_map[flit_id][-1] == dest
-
-    # print(self.flit_path_map[flit_id][0])
-    # print(self.flit_path_map[flit_id][-1])
-
-    # print(src)
-    # print(dest)
 
   def extract_unique_path(self):
     paths = self.flit_path_map.values()
     unipaths = set(tuple(i) for i in paths)
     return unipaths
+
+  
 
 
 if __name__ == "__main__":
