@@ -47,17 +47,46 @@ Helper code to extract flit latency and check saturation
 '''
 class Booksim_log:
   def __init__(self, filename): 
-    self.extract_log(filename)
+    self.filename = filename
+    self.log = self.extract_log(filename)
   
-  def extract_log(self):
+  def extract_log(self, filename):
+    lines = [line.rstrip() for line in open(filename, 'r')]
+    if "====== Overall Traffic Statistics ======" not in lines:
+      print("\nSimulation unstable.")
+      return []
+    idx = lines.index("====== Overall Traffic Statistics ======")
+    return lines[idx:]
+  
+  def get_average_latency(self, type):
+    if self.log == []:
+      print("\nUnstable simulation has no average latencies.")
+      return float('inf')
+    
+    keyword = type + " latency average"
+    match = [line for line in self.log if line.startswith(keyword)]
+    if len(match) == 0:
+      print("\nUnable to find", type, "average latency.")
+      return -1
+    
+    line = match[0]
+    idx1 = line.find('=')
+    idx2 = line.find('(')
+    latency = float(line[idx1+1:idx2])
+    return latency
 
 
 if __name__ == "__main__":
-    filename = "stats_out/out"
-    FlitPathTable = Flit_path_table(n=2, k=4, filename=filename)
+    stats_filename = "stats_out/out"
+    FlitPathTable = Flit_path_table(n=2, k=4, filename=stats_filename)
     flit_path_map = FlitPathTable.flit_path_map
     print("flit path map: ")
     print(flit_path_map, "\n")
     uni_paths = FlitPathTable.extract_unique_path()
     print("find unique paths: ")
-    print(uni_paths)
+    print(uni_paths, "\n")
+
+    log_filename = "log/fattree_configt1p70u.log"
+    LogData = Booksim_log(log_filename)
+    flit_latency = LogData.get_average_latency("Flit")
+    print("Flit average latency: ", flit_latency, "\n")
