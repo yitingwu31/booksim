@@ -50,7 +50,7 @@ class GA_init():
                 pattern_to_pick +=1
                 if (pattern_to_pick == len(traffic_patterns)):
                     pattern_to_pick = 0
-                print(f"Found {len(self._table[i])} SD Pairs of {self.total_combs}")
+                # print(f"Found {len(self._table[i])} SD Pairs of {self.total_combs}")
 
     def display_table(self):
         for row in self._table:

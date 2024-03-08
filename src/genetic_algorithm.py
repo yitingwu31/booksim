@@ -5,12 +5,14 @@ import numpy as np
 import random
 from init_test import GA_init
 import pickle
+import json
 
 
 class GA_algo:
   def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut):
      self.k = k
      self.n = n
+     self.N = k ** n
      self.n_genes = k**n * (k**n - 1)  #k^n * (k^n - 1)  =  # S,D pairs
      self.n_bits = n_bits
      self.n_chrom = n_chrom
@@ -20,18 +22,42 @@ class GA_algo:
     #  self.ga_table = GA_init(k, n, n_bits).fill()._table #TODO later: expand to all rt, injection rates
      self.ga_table = self.load_from_pickle("path_table.pkl")
 
+     self.chromosomes = [self.generate_chrom(self.n_genes, self.n_bits) for _ in range(self.n_chrom)]
+     self.sd_pair_mapping = self.generate_sd_pair_mapping()
+
+
   def load_from_pickle(self, filepath):
     with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
         return pickle.load(file)
-    
-  def decode(chromosome):
-    'decode "111" "000" into paths'
-    paths = list()
-    # 1. read this path from the GA_table
-    for bitstring in chromosome:
-      bits_to_int = int(bitstring, 2)
-      paths.append(    )   # [GA_init._table[bits_to_int][gene_number]]
-    return paths
+
+  def generate_chrom(self, n_genes, n_bits):
+      # Generate a chromosome as a list of random bitstrings
+      return [''.join(str(randint(2)) for _ in range(n_bits)) for _ in range(n_genes)]
+
+  def generate_sd_pair_mapping(self):
+      # Create a mapping from gene index to unique SD pair
+      sd_pairs = [(src, dest) for src in range(self.k**self.n) for dest in range(self.k**self.n) if src != dest]
+      return sd_pairs
+
+  def decode_chromosome_to_paths(self, chromosome):
+      # Decoding chromosome to paths
+      paths = []
+      for gene, sd_pair in zip(chromosome, self.sd_pair_mapping):
+          gene_index = int(gene, 2)  # Convert binary string to integer
+          path = self.ga_table[gene_index][sd_pair]  # Get the path from ga_table
+          paths.append(path)
+      return paths
+  
+  def convert_SD_to_index(self, src, dst):
+     if dst > src:
+        index = src * (self.N - 1) + (dst - 1)
+     else:
+        index = src * (self.N - 1) + dst
+
+  def save_paths_to_json(self, paths, filepath):
+      # Saving paths to JSON file
+      with open(filepath, 'w') as json_file:
+          json.dump(paths, json_file, indent=4)
 
   def generate_dor_path2d(self): #generate DOR random paths (no deadlock)  list of (x,y) from start to end.
       # a gene is a column in the GA table
@@ -145,9 +171,19 @@ if __name__ == "__main__":
   r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
 
   ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
-  print(ga1.ga_table)
-  # best_score, best_chrom = ga1.run_GA()
+  # print(ga1.ga_table)
 
+  # print(len(ga1.chromosomes))
+  # print(len(ga1.sd_pair_mapping))
+
+  example_chromosome = ga1.chromosomes[0]
+  
+  # Decode the chromosome to paths using the ga_table
+  decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
+  # print(decoded_paths)
+
+  # Save the decoded paths to a JSON file
+  ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
 
 
   #TODO: convert this best chrom chart into a set of routes
