@@ -49,16 +49,14 @@
 #include "tree4.hpp"
 #include "qtree.hpp"
 #include "cmesh.hpp"
-#include "ga_table.hpp"
-
-
+// #include "ga_table.hpp"
 
 map<string, tRoutingFunction> gRoutingFunctionMap;
 
 /* Global information used by routing functions */
 
 int gNumVCs;
-GATable* ga_table = new GATable();
+// GATable* ga_table = new GATable();
 
 /* Add more functions here
  *
@@ -579,7 +577,7 @@ int ga_next_mesh(int cur, int src, int dest) {
     return 2 * gN; // Eject
   }
 
-  int next_node = ga_table->find_next_node(cur, src, dest);
+  int next_node = gaTable->find_next_node(cur, src, dest);
 
   // cout << "next node is " << next_node << endl;
 

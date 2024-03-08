@@ -53,6 +53,7 @@
 #include "network.hpp"
 #include "injection.hpp"
 #include "power_module.hpp"
+// #include "ga_table.hpp"
 
 
 
@@ -91,6 +92,8 @@ bool gTrace;
 
 ostream * gWatchOut;
 ostream * gWatchFlitPath;
+
+GATable * gaTable;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -170,6 +173,14 @@ int main( int argc, char **argv )
 
   gPrintActivity = (config.GetInt("print_activity") > 0);
   gTrace = (config.GetInt("viewer_trace") > 0);
+
+  // Initialize GA routing paths
+  string path_json_file = config.GetStr("GA_path_file");
+  if (path_json_file == "") {
+    gaTable = new GATable();
+  } else {
+    gaTable = new GATable( path_json_file );
+  }
   
   string watch_out_file = config.GetStr( "watch_out" );
   if(watch_out_file == "") {

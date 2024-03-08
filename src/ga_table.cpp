@@ -1,5 +1,7 @@
 #include "ga_table.hpp"
 #include <iostream>
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 template <typename S>
@@ -11,9 +13,6 @@ ostream& operator<<(ostream& os,
     }
     return os;
 }
-
-// TODO: Make a class for path: vector, current node, src, dest
-
 
 GATable::GATable() {
     // cout << "calling GA Table constructor" << endl;
@@ -52,6 +51,34 @@ GATable::GATable() {
     _table[std::make_pair(3, 1)] = path_3_to_1;
     _table[std::make_pair(3, 2)] = path_3_to_2;
     _table[std::make_pair(3, 0)] = path_3_to_0;
+}
+
+
+GATable::GATable(const std::string & path_filename) {
+    ifstream path_list;
+    path_list.open(path_filename.c_str());
+
+    string line;
+    if (path_list.is_open()) {
+        while (!path_list.eof()) {
+            getline(path_list, line);
+
+            int start = line.find('(');
+            int end = line.find(')');
+            line = line.substr(start+1, end);
+
+            if (line != "") {
+                vector<int> nodes;
+                stringstream ss(line);
+                while (ss.good()) {
+                    string substr;
+                    getline(ss, substr, ',');
+                    nodes.push_back(stoi(substr));
+                }
+                _table[std::make_pair(nodes[0], nodes[-1])] = nodes;
+            }
+        }
+    }
 }
 
 int GATable::find_next_node( int cur, int src, int dest)

@@ -287,6 +287,7 @@ BookSimConfig::BookSimConfig( )
 
   AddStrField("watch_out", "");
   AddStrField("watch_path_out", "");
+  AddStrField("GA_path_file", "");
 
   AddStrField("stats_out", "");
 

@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include "ga_table.hpp"
 
 /*all declared in main.cpp*/
 
@@ -51,5 +52,7 @@ extern bool gTrace;
 
 extern std::ostream * gWatchOut;
 extern std::ostream * gWatchFlitPath;
+
+extern GATable * gaTable;
 
 #endif

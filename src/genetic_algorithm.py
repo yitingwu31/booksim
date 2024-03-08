@@ -58,6 +58,11 @@ class GA_algo:
       # Saving paths to JSON file
       with open(filepath, 'w') as json_file:
           json.dump(paths, json_file, indent=4)
+  
+  def save_paths_to_txt(self, paths, filepath):
+     file = open(filepath, 'w')
+     for path in paths:
+        file.write(str(path)+"\n")
 
   def generate_dor_path2d(self): #generate DOR random paths (no deadlock)  list of (x,y) from start to end.
       # a gene is a column in the GA table
@@ -184,6 +189,7 @@ if __name__ == "__main__":
 
   # Save the decoded paths to a JSON file
   ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
+  ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
 
   #TODO: convert this best chrom chart into a set of routes
