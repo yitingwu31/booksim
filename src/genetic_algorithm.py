@@ -147,7 +147,7 @@ class GA_algo:
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
-    self.generate_config_file(filename="ga_test_temp", traffic="custom_neighbor", step=1, route_algo="ga_mesh", inj_rate=0.1)
+    self.generate_config_file(filename="ga_test_temp", traffic="custom_neighbor", step=1, route_algo="ga", inj_rate=0.1)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  #TODO: .log or .txt
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
     subprocess.run(["./booksim", "config/ga_test_temp"])
