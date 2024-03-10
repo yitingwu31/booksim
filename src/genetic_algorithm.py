@@ -20,7 +20,7 @@ class GA_algo:
      self.n_iter = n_iter
      self.r_cross = r_cross
      self.r_mut = r_mut
-     self.ga_table = self.load_from_pickle("path_table.pkl")
+     self.ga_table = self.load_from_pickle("path_table_n2_k2.pkl")
      self.chromosomes = [self.generate_chrom(self.n_genes, self.n_bits) for _ in range(self.n_chrom)]
      self.sd_pair_mapping = self.generate_sd_pair_mapping()
 
@@ -29,7 +29,7 @@ class GA_algo:
         return pickle.load(file)
 
   def generate_chrom(self, n_genes, n_bits):
-      # we fenerate a chromosome as a list of random bitstrings
+      # we generate a chromosome as a list of random bitstrings
       return [''.join(str(randint(2)) for _ in range(n_bits)) for _ in range(n_genes)]
 
   def generate_sd_pair_mapping(self):
@@ -42,7 +42,10 @@ class GA_algo:
       paths = []
       for gene, sd_pair in zip(chromosome, self.sd_pair_mapping):
           gene_index = int(gene, 2)  # Convert binary string to integer
-          path = self.ga_table[gene_index][(sd_pair)]  # Get the path from ga_table
+          sd_index = self.convert_SD_to_index(sd_pair[0], sd_pair[1])
+          print("\nsd_pair: ", sd_pair, " sd_index: ", sd_index)
+          print("ga table dimension: ", self.ga_table, "\n")
+          path = self.ga_table[sd_index][gene_index]  # Get the path from ga_table
           paths.append(path)
       return paths
 
@@ -193,7 +196,7 @@ class GA_algo:
     num_generations_without_improvement = 0
     convergence_threshold = 4
     prev_best_score = float('inf')
-    for gen in range(n_iter):
+    for gen in range(self.n_iter):
       scores = [self.score(candidate) for candidate in self.chromosomes]
       
       # checking exit
