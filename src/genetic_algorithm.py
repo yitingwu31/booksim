@@ -1,32 +1,50 @@
-from numpy.random import randint
-from numpy.random import rand
-
 import numpy as np
-import random
-from extract_path import Booksim_log
+from numpy.random import randint, rand
 import pickle
 import json
 import os
 import subprocess
+from extract_path import Booksim_log
+from init_test import *
 
 class GA_algo:
   def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut):
-     self.k = k
-     self.n = n
-     self.N = k ** n
-     self.n_genes = k**n * (k**n - 1)  #k^n * (k^n - 1)  =  # S,D pairs
-     self.n_bits = n_bits
-     self.n_chrom = n_chrom
-     self.n_iter = n_iter
-     self.r_cross = r_cross
-     self.r_mut = r_mut
-     self.ga_table = self.load_from_pickle("path_table_n2_k2.pkl")
-     self.chromosomes = [self.generate_chrom(self.n_genes, self.n_bits) for _ in range(self.n_chrom)]
-     self.sd_pair_mapping = self.generate_sd_pair_mapping()
+    # ==================
+    # setup param
+    # ==================
+    self.k = k
+    self.n = n
+    self.N = k ** n
+    self.n_genes = self.N * (self.N - 1)  #k^n * (k^n - 1)  =  # S,D pairs
+    self.n_bits = n_bits
+    self.n_chrom = n_chrom
+    self.n_iter = n_iter
+    self.r_cross = r_cross
+    self.r_mut = r_mut
 
-  def load_from_pickle(self, filepath):
-    with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
-        return pickle.load(file)
+    # ==================
+    # initialize SD pair table
+    # ==================
+    self.ga_table = self.init_table()
+    # self.ga_table = self.load_from_pickle("path_table_n2_k2.pkl")
+
+    # ==================
+    # initialize chromosomes
+    # ==================
+    self.chromosomes = [self.generate_chrom(self.n_genes, self.n_bits) for _ in range(self.n_chrom)]
+    self.sd_pair_mapping = self.generate_sd_pair_mapping()
+
+  def init_table(self):
+    ga_init = GA_init(k=self.k, n=self.n, b=self.n_bits)
+    ga_init.fill()
+    ga_init.display_table()
+    # ga_init.save_to_pickle(f'path_table_n{n}_k{k}.pkl')
+
+    return ga_init._table
+
+  # def load_from_pickle(self, filepath):
+  #   with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
+  #       return pickle.load(file)
 
   def generate_chrom(self, n_genes, n_bits):
       # we generate a chromosome as a list of random bitstrings
@@ -34,7 +52,7 @@ class GA_algo:
 
   def generate_sd_pair_mapping(self):
       # we create a mapping from gene index to unique SD pair
-      sd_pairs = [(src, dest) for src in range(self.k**self.n) for dest in range(self.k**self.n) if src != dest]
+      sd_pairs = [(src, dest) for src in range(self.N) for dest in range(self.N) if src != dest]
       return sd_pairs
 
   def decode_chromosome_to_paths(self, chromosome):
@@ -54,10 +72,10 @@ class GA_algo:
         index = src * (self.N - 1) + dst
       return index
 
-  def save_paths_to_json(self, paths, filepath):
-      # Saving paths to JSON file
-      with open(filepath, 'w') as json_file:
-          json.dump(paths, json_file, indent=4)
+  # def save_paths_to_json(self, paths, filepath):
+  #     # Saving paths to JSON file
+  #     with open(filepath, 'w') as json_file:
+  #         json.dump(paths, json_file, indent=4)
   
   def save_paths_to_txt(self, paths, filepath):
      file = open(filepath, 'w')
@@ -253,11 +271,7 @@ if __name__ == "__main__":
   # print(decoded_paths)
 
   # Save the decoded paths to a JSON file
-  ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
+  # ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
   ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
   best_score, best_chrom = ga1.run_GA()
-
-  #TODO: convert this best chrom chart into a set of routes
-  # deterministic_path = GA_algo.decode(best_chrom)
-  #TODO: run booksim on this "best" route
