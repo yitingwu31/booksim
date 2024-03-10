@@ -23,7 +23,7 @@ topology = mesh;
       output_speedup    = 1;
       internal_speedup  = 1.0;
 
-      traffic = custom_neighbor;
+      traffic = uniform;
       neighbor_step = 1;
       packet_size = 5;
 
