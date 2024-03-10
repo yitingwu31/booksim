@@ -86,7 +86,7 @@ if __name__ == "__main__":
     print("find unique paths: ")
     print(uni_paths, "\n")
 
-    log_filename = "log/fattree_configt1p70u.log"
+    log_filename = "log/fattree_bit_t1"
     LogData = Booksim_log(log_filename)
     flit_latency = LogData.get_average_latency("Flit")
     print("Flit average latency: ", flit_latency, "\n")

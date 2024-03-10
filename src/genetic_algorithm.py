@@ -43,8 +43,6 @@ class GA_algo:
       for gene, sd_pair in zip(chromosome, self.sd_pair_mapping):
           gene_index = int(gene, 2)  # Convert binary string to integer
           sd_index = self.convert_SD_to_index(sd_pair[0], sd_pair[1])
-          print("\nsd_pair: ", sd_pair, " sd_index: ", sd_index)
-          print("ga table dimension: ", self.ga_table, "\n")
           path = self.ga_table[sd_index][gene_index]  # Get the path from ga_table
           paths.append(path)
       return paths
