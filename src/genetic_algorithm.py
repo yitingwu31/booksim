@@ -156,19 +156,23 @@ class GA_algo:
     
     return flit_latency
 
-  def mutation(self):  
+  def mutation(self, chromosome):  
     'choose one random gene -> mutate a bit in its index'
-    for i in range(len(self.bitstring)):
-      # check for a mutation
-      if rand() < self.r_mut:
-        # flip the bit
-        self.bitstring[i] = 1 - self.bitstring[i]
+    if rand() < self.r_mut:
+      chromosome_list = list(chromosome)
+      # Choose a random index to mutate
+      x = randint(len(chromosome_list))
+      # Flip the bit
+      chromosome_list[x] = str(1 - int(chromosome_list[x]))
+      # Convert the list back to a string
+      chromosome = ''.join(chromosome_list)
+    return chromosome
 
   def crossover(self, p1, p2):
     '# crossover 2 parents to create 2 children (new indices)'
-    c1, c2 = p1.copy(), p2.copy()
+    c1, c2 = p1, p2
     if rand() < self.r_cross:
-      pt = randint(1, len(p1)-2)
+      pt = randint(self.n_genes)
       c1 = p1[:pt] + p2[pt:]
       c2 = p2[:pt] + p1[pt:]
     return c1, c2
@@ -191,6 +195,24 @@ class GA_algo:
     prev_best_score = float('inf')
     for gen in range(n_iter):
       scores = [self.score(candidate) for candidate in self.chromosomes]
+      
+      # checking exit
+      for idx, score in enumerate(scores):
+        if best_score is None or score < best_score:
+            best_score = score
+            best_chrom = self.chromosomes[idx]
+      # exit on convergence
+      if prev_best_score is not None:
+        if best_score >= prev_best_score and gen > n_iter/2:
+          num_generations_without_improvement += 1
+      else:
+          num_generations_without_improvement = 0
+      prev_best_score = best_score
+
+      if num_generations_without_improvement >= convergence_threshold:
+        print("Convergence reached. Exiting loop.")
+        break
+      
       # select parents
       selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
       # create next generation
@@ -204,28 +226,14 @@ class GA_algo:
       for c in children:
         self.mutation(c)
       self.chromosomes = children
-      # determine best:
-      new_scores = [self.score(candidate) for candidate in self.chromosomes]
-      for idx, score in enumerate(new_scores):
-            if score < best_score:
-                best_score = score
-                best_chrom = self.chromosomes[idx]
-      # exit on convergence
-      if best_score >= prev_best_score and gen > n_iter/2:
-            num_generations_without_improvement += 1
-      else:
-          num_generations_without_improvement = 0
-      if num_generations_without_improvement >= convergence_threshold:
-          print("Convergence reached. Exiting loop.")
-          break
-      prev_best_score = best_score
+      
     return best_score, best_chrom
 
 if __name__ == "__main__":
   # define range for input
   k = 2
   n = 2
-  n_iter = 6 # num generations
+  n_iter = 1 # num generations
   n_chrom = 8  #population size
   n_bits = 3
   r_cross = 0.5 #crossover rate
