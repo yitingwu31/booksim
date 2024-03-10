@@ -34,6 +34,8 @@ class GA_init():
         # SD_table contains only one path for each SD pair
         self.SD_table = [None] * (self.N * (self.N-1))
 
+        self.generate_watch_list('watchlists/watch_ga_1')
+
 
     def fill(self):
         self.fill_allSDpair()
@@ -174,6 +176,7 @@ class GA_init():
         for i in range(len(self._table)):
             tb_len = len(self._table[i])
             if tb_len < self.num_paths_per_SDpair:
+                print("Initial table row ", tb_len, " filling to 8 rows...\n")
                 for k in range(self.num_paths_per_SDpair - tb_len):
                     idx = np.random.randint(tb_len)
                     self._table[i].append(self._table[i][idx])
@@ -220,6 +223,11 @@ class GA_init():
         with open(filepath, 'wb') as file:  # Note 'wb' for writing bytes
             pickle.dump(self._table, file)
     
+    def generate_watch_list(self, filename):
+        with open(filename, 'w') as f:
+            for i in range((self.N) * (self.N-1)):
+                f.write(f"{i}\n")
+    
     def generate_config_file(self, filename, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000):
         config_content = f""" 
 
@@ -250,7 +258,7 @@ internal_speedup  = 1.0;
 
 traffic = {traffic};
 neighbor_step = {step};
-packet_size = 5;
+packet_size = 1;
 
 sim_type = latency;
 
