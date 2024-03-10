@@ -1,8 +1,10 @@
 import pickle
 import subprocess
 import os
+import numpy as np
 from tqdm import tqdm
 from extract_path import Flit_path_table
+
 
 algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
 injec_start_rate = 0.2 #default to 0.3?
@@ -82,8 +84,7 @@ class GA_init():
                     cur_inj_rate += 0.02
                 cur_time_run += 4000
 
-        # self.display_table()
-
+        self.fill_table_row()
 
     def fill_allSDpair(self):
         traffic = "custom_neighbor"
@@ -168,6 +169,14 @@ class GA_init():
             # ============================
             if path not in self._table[sd_index]:
                 self._table[sd_index].append(path)
+                
+    def fill_table_row(self):
+        for i in range(len(self._table)):
+            tb_len = len(self._table[i])
+            if tb_len < self.num_paths_per_SDpair:
+                for k in range(self.num_paths_per_SDpair - tb_len):
+                    idx = np.random.randint(tb_len)
+                    self._table[i].append(self._table[i][idx])
 
 
     def display_SDtable(self):

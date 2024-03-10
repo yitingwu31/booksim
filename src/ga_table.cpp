@@ -59,26 +59,28 @@ GATable::GATable(const std::string & path_filename) {
     path_list.open(path_filename.c_str());
 
     string line;
+    cout << "loading decoded paths" << endl;
     if (path_list.is_open()) {
         while (!path_list.eof()) {
             getline(path_list, line);
 
             int start = line.find('(');
             int end = line.find(')');
-            line = line.substr(start+1, end);
+            line = line.substr(start+1, end-1);
 
             if (line != "") {
-                vector<int> nodes;
-                stringstream ss(line);
-                while (ss.good()) {
-                    string substr;
-                    getline(ss, substr, ',');
-                    nodes.push_back(stoi(substr));
+                vector<int> nodes;     
+                string token;
+                istringstream tokenStream(line);     
+                while (getline(tokenStream, token, ',')) {      
+                    nodes.push_back(stoi(token));     
                 }
-                _table[std::make_pair(nodes[0], nodes[-1])] = nodes;
+
+                _table[std::make_pair(nodes[0], nodes.back())] = nodes;
             }
         }
     }
+
 }
 
 int GATable::find_next_node( int cur, int src, int dest)
