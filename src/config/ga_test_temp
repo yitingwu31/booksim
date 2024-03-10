@@ -2,7 +2,7 @@ topology = mesh;
 k = 2;
 n = 2;
 
-routing_function = romm_ni;
+routing_function = ga_mesh;
 
 // Flow control
 num_vcs     = 8;

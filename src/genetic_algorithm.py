@@ -3,10 +3,11 @@ from numpy.random import rand
 
 import numpy as np
 import random
-from init_test import GA_init
+from extract_path import Booksim_log
 import pickle
 import json
-
+import os
+import subprocess
 
 class GA_algo:
   def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut):
@@ -19,40 +20,41 @@ class GA_algo:
      self.n_iter = n_iter
      self.r_cross = r_cross
      self.r_mut = r_mut
-    #  self.ga_table = GA_init(k, n, n_bits).fill()._table #TODO later: expand to all rt, injection rates
-     self.ga_table = self.load_from_pickle("path_table.pkl")
-
+     self.ga_table = self.load_from_pickle("path_table_n2_k2.pkl")
      self.chromosomes = [self.generate_chrom(self.n_genes, self.n_bits) for _ in range(self.n_chrom)]
      self.sd_pair_mapping = self.generate_sd_pair_mapping()
-
 
   def load_from_pickle(self, filepath):
     with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
         return pickle.load(file)
 
   def generate_chrom(self, n_genes, n_bits):
-      # Generate a chromosome as a list of random bitstrings
+      # we generate a chromosome as a list of random bitstrings
       return [''.join(str(randint(2)) for _ in range(n_bits)) for _ in range(n_genes)]
 
   def generate_sd_pair_mapping(self):
-      # Create a mapping from gene index to unique SD pair
+      # we create a mapping from gene index to unique SD pair
       sd_pairs = [(src, dest) for src in range(self.k**self.n) for dest in range(self.k**self.n) if src != dest]
       return sd_pairs
 
   def decode_chromosome_to_paths(self, chromosome):
-      # Decoding chromosome to paths
+      # decode chromosome to paths
       paths = []
       for gene, sd_pair in zip(chromosome, self.sd_pair_mapping):
           gene_index = int(gene, 2)  # Convert binary string to integer
-          path = self.ga_table[gene_index][sd_pair]  # Get the path from ga_table
+          sd_index = self.convert_SD_to_index(sd_pair[0], sd_pair[1])
+          print("\nsd_pair: ", sd_pair, " sd_index: ", sd_index)
+          print("ga table dimension: ", self.ga_table, "\n")
+          path = self.ga_table[sd_index][gene_index]  # Get the path from ga_table
           paths.append(path)
       return paths
-  
+
   def convert_SD_to_index(self, src, dst):
-     if dst > src:
+      if dst > src:
         index = src * (self.N - 1) + (dst - 1)
-     else:
+      else:
         index = src * (self.N - 1) + dst
+      return index
 
   def save_paths_to_json(self, paths, filepath):
       # Saving paths to JSON file
@@ -94,35 +96,89 @@ class GA_algo:
           sequence.append((x, y))
       return sequence
   
-  def score(self, candidate):
-    'calculate its average latency of this path.  (based on latency == shorter latency means higher score)'
-    # TODO: replace. call booksim simulation at low % and read this datapath's real latency! 
-    # 1. decode candidate "111" "001" into real paths. Write into routefunction? 
-    paths = self.decode(candidate)
-    sum_score = 0
-    # TODO: Evaluate chromosome (run in booksim)
-    for path in paths:
-        # TODO: run booksim(path)
-        sum_score += path
-    
-    return sum_score
+  def generate_config_file(self, filename, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000):
+      config_content = f""" 
 
-  def mutation(self):  
+      topology = mesh;
+      k = {self.k};
+      n = {self.n};
+
+      routing_function = {route_algo};
+
+      // Flow control
+      num_vcs     = 8;
+      vc_buf_size = 8;
+      wait_for_tail_credit = 1;
+
+      // Router architecture
+      vc_allocator = islip;
+      sw_allocator = islip;
+      alloc_iters  = 1;
+
+      credit_delay   = 2;
+      routing_delay  = 0;
+      vc_alloc_delay = 1;
+      sw_alloc_delay = 1;
+
+      input_speedup     = 2;
+      output_speedup    = 1;
+      internal_speedup  = 1.0;
+
+      traffic = {traffic};
+      neighbor_step = {step};
+      packet_size = 5;
+
+      sim_type = latency;
+
+      sample_period  = {cur_time};  
+
+      injection_rate = {inj_rate};
+
+      watch_file = watchlists/watch_ga_1;
+      watch_path_out = stats_out/out;
+      GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later
+      """
+      os.makedirs('config', exist_ok=True)
+      # write to config/ga_test_temp
+      with open(os.path.join('config', filename), 'w') as config_file:
+          config_file.write(config_content.strip())
+
+  def score(self, candidate):
+    'calculate its average latency of this path'
+    paths = self.decode_chromosome_to_paths(candidate)
+    decoded_paths = self.decode_chromosome_to_paths(candidate)
+    # Save the decoded paths to a txt file
+    ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
+    self.generate_config_file(filename="ga_test_temp", traffic="custom_neighbor", step=1, route_algo="ga_mesh", inj_rate=0.1)
+    with open(f'log/ga_test_temp.log', 'w') as log_file:  #TODO: .log or .txt
+      subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
+    subprocess.run(["./booksim", "config/ga_test_temp"])
+    LogData = Booksim_log('log/ga_test_temp.log')
+    flit_latency = LogData.get_average_latency("Flit")
+    print("Flit average latency: ", flit_latency, "\n")
+    
+    return flit_latency
+
+  def mutation(self, chromosome):  
     'choose one random gene -> mutate a bit in its index'
-    for i in range(len(self.bitstring)):
-      # check for a mutation
-      if rand() < self.r_mut:
-        # flip the bit
-        self.bitstring[i] = 1 - self.bitstring[i]
+    if rand() < self.r_mut:
+      chromosome_list = list(chromosome)
+      # Choose a random index to mutate
+      x = randint(len(chromosome_list))
+      # Flip the bit
+      chromosome_list[x] = str(1 - int(chromosome_list[x]))
+      # Convert the list back to a string
+      chromosome = ''.join(chromosome_list)
+    return chromosome
 
   def crossover(self, p1, p2):
     '# crossover 2 parents to create 2 children (new indices)'
-    c1, c2 = p1.copy(), p2.copy()
+    c1, c2 = p1, p2
     if rand() < self.r_cross:
-      pt = randint(1, len(p1)-2)
+      pt = randint(self.n_genes)
       c1 = p1[:pt] + p2[pt:]
       c2 = p2[:pt] + p1[pt:]
-    return [c1, c2]
+    return c1, c2
   
   def selection(self, pop, scores, k=3):
     'tournament selection'
@@ -135,41 +191,52 @@ class GA_algo:
     return pop[selection_ix]
 
   def run_GA(self):
-    population = [self.generate_chrom(self.n_genes, n_bits) for chrom in range(n_chrom)]
-    best_chrom, best_score = None
-    for gen in range(n_iter): #TODO: or exit if delta converges
-      scores = [self.score(candidate) for candidate in population]
+    best_chrom = None
+    best_score = None
+    num_generations_without_improvement = 0
+    convergence_threshold = 4
+    prev_best_score = float('inf')
+    for gen in range(self.n_iter):
+      scores = [self.score(candidate) for candidate in self.chromosomes]
+      
+      # checking exit
+      for idx, score in enumerate(scores):
+        if best_score is None or score < best_score:
+            best_score = score
+            best_chrom = self.chromosomes[idx]
+      # exit on convergence
+      if prev_best_score is not None:
+        if best_score >= prev_best_score and gen > n_iter/2:
+          num_generations_without_improvement += 1
+      else:
+          num_generations_without_improvement = 0
+      prev_best_score = best_score
+
+      if num_generations_without_improvement >= convergence_threshold:
+        print("Convergence reached. Exiting loop.")
+        break
+      
       # select parents
-      selected = [self.selection(population, scores) for _ in range(n_chrom)]
+      selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
       # create next generation
       children = list()
       # crossover and mutation
       for i in range(0, n_chrom, 2):
         # get selected parents in pairs
         p1, p2 = selected[i], selected[i+1]
-        for c in self.crossover(p1, p2, r_cross):
-          self.mutation(c, r_mut)
-          children.append(c)
-      population = children
-      # determine best:
-      new_scores = [self.score(candidate) for candidate in population]
-      for c in new_scores:
-        if new_scores > best_score:  #TODO: decide score > or <
-            best_score = new_scores
-            best_chrom = c
+        c1, c2 = self.crossover(p1, p2)
+        children += c1 + c2
+      for c in children:
+        self.mutation(c)
+      self.chromosomes = children
+      
     return best_score, best_chrom
-  
-  def generate_chrom(self, n_genes, n_bits):
-    'init a random chromosome for testing               in real C++ = (run GAinit.py )'
-    bitstrings_array = np.random.randint(2, size=(n_genes, n_bits))  # random gene bits
-    chromosome = [''.join(str(bit) for bit in bits) for bits in bitstrings_array] #join as one string
-    return chromosome
 
 if __name__ == "__main__":
   # define range for input
   k = 2
   n = 2
-  n_iter = 6 # num generations
+  n_iter = 1 # num generations
   n_chrom = 8  #population size
   n_bits = 3
   r_cross = 0.5 #crossover rate
@@ -191,6 +258,7 @@ if __name__ == "__main__":
   ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
   ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
+  best_score, best_chrom = ga1.run_GA()
 
   #TODO: convert this best chrom chart into a set of routes
   # deterministic_path = GA_algo.decode(best_chrom)
