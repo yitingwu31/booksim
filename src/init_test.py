@@ -9,7 +9,7 @@ from extract_path import Flit_path_table
 algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
 injec_start_rate = 0.2 #default to 0.3?
 
-from extract_path import Flit_path_table
+# from extract_path import Flit_path_table
 
 class GA_init():
     def __init__(self, k, n, b, rt=algos_available, injection_rates=injec_start_rate):
@@ -26,7 +26,8 @@ class GA_init():
         # self._table = [[0 for _ in range((k**n-1)*k**n)] for _ in range(2**b)]
         # self._table = [{} for _ in range(2**b)]
         # _table should contain at most 2**b paths for each SD pair
-        self.num_paths_per_SDpair = 2**b
+        # self.num_paths_per_SDpair = 2**b
+        self.num_paths_per_SDpair = 2
         self._table = [None] * (self.N * (self.N-1))
         
 
@@ -34,7 +35,8 @@ class GA_init():
         # SD_table contains only one path for each SD pair
         self.SD_table = [None] * (self.N * (self.N-1))
 
-        self.generate_watch_list('watchlists/watch_ga_1')
+        self.packet_size = 1
+        self.generate_watch_list('watchlists/watch_ga_2', packet_size=self.packet_size)
 
 
     def fill(self):
@@ -48,7 +50,8 @@ class GA_init():
         for i in tqdm(range(self.num_paths_per_SDpair), desc="Generating Path Table", unit="Rows"):
             cur_inj_rate = self.injection_rates
             cur_time_run = 10000
-            traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+            # traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+            traffic_patterns = ["uniform", "bitcomp"]
             
             for traffic in traffic_patterns:
 
@@ -58,7 +61,7 @@ class GA_init():
                 route_algo = self.route_table[i]
                 print(f"............. run booksim with route_algo={route_algo}, traffic={traffic} .............")
                 
-                self.generate_config_file(filename="ga_test_temp", route_algo=route_algo, inj_rate=cur_inj_rate, cur_time=cur_time_run, traffic=traffic)
+                self.generate_config_file(filename="ga_test_temp", route_algo=route_algo, inj_rate=cur_inj_rate, cur_time=cur_time_run, traffic=traffic, packet_size=self.packet_size)
                 with open(f'log/temp_log_{i}.txt', 'w') as log_file:
                     subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
                 
@@ -223,12 +226,12 @@ class GA_init():
         with open(filepath, 'wb') as file:  # Note 'wb' for writing bytes
             pickle.dump(self._table, file)
     
-    def generate_watch_list(self, filename):
+    def generate_watch_list(self, filename, packet_size):
         with open(filename, 'w') as f:
-            for i in range((self.N) * (self.N-1)):
-                f.write(f"{i}\n")
+            for i in range(2*self.N):
+                f.write(f"{i*packet_size}\n")
     
-    def generate_config_file(self, filename, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000):
+    def generate_config_file(self, filename, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000, packet_size=1):
         config_content = f""" 
 
 topology = mesh;
@@ -258,7 +261,7 @@ internal_speedup  = 1.0;
 
 traffic = {traffic};
 neighbor_step = {step};
-packet_size = 1;
+packet_size = {packet_size};
 
 sim_type = latency;
 
@@ -266,7 +269,7 @@ sample_period  = {cur_time};
 
 injection_rate = {inj_rate};
 
-watch_file = watchlists/watch_ga_1;
+watch_file = watchlists/watch_ga_2;
 watch_path_out = watchlists/temp_{traffic}_{route_algo};
 """
         # Ensure the config directory exists
@@ -278,11 +281,11 @@ watch_path_out = watchlists/temp_{traffic}_{route_algo};
 
 
 if __name__ == "__main__":
-    k = 2 # Nodes per dimension
+    k = 4 # Nodes per dimension
     n = 2 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 
-    source_dest_pairs = ((k ** n) - 1)*(k ** n)
+    # source_dest_pairs = ((k ** n) - 1)*(k ** n)
     # print(f"there are supposed to be {source_dest_pairs} source destination pairs")
 
     ga_init = GA_init(k, n, b)

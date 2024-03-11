@@ -142,7 +142,7 @@ class GA_algo:
 
       traffic = {traffic};
       neighbor_step = {step};
-      packet_size = 5;
+      packet_size = 1;
 
       sim_type = latency;
 
