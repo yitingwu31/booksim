@@ -84,34 +84,32 @@ def display_results(results, routing_algo, traffic_pattern):
          print(results[algo][traffic])
    print("\n")
 
-def draw_figures(results, routing_algo, traffic_pattern, inj_rate):
+def draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k):
    for traffic in traffic_pattern:
       plt.figure()
       plt.title(f"{traffic} traffic")
       plt.xlabel('Flit injection rate')
-      plt.ylabel('Average flit latency')
-      for algo in routing_algo:
+      plt.ylabel(f'Average {type.lower()} latency')
+      for algo in routing_algo[::-1]:
          good_len = len(results[algo][traffic])
          if float('inf') in results[algo][traffic]:
             good_len = results[algo][traffic].index(float('inf'))
          plt.plot(inj_rate[:good_len], results[algo][traffic][:good_len], label=algo)
-   plt.legend()
+      plt.legend('upper left')
+      plt.savefig(f'analysis/plots/n{n}k{k}_{type.lower()}_{traffic}')
    plt.show()
 
 if __name__ == '__main__':
-    routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
+    # routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
     traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-    # routing_algo = ["ga", "min_adapt", "xy_yx"]
-    # traffic_pattern = ["uniform", "bitcomp"]
+    routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
+    # traffic_pattern = ["uniform", "bitcomp", "transpose"]
     inj_rate = [0.05 * i for i in range(1, 7)]
-    # types = ['Packet', 'Network', 'Flit']
     type = 'Packet'
 
-    # results = {key: {traffic: {lat_type: [] for lat_type in types} for traffic in traffic_pattern} for key in routing_algo}
     results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
-    # results["GA"] = {traffic: {lat_type: [] for lat_type in types} for traffic in traffic_pattern}
 
-    k = 2
+    k = 4
     n = 2
 
     config_file = 'config_test'
@@ -127,15 +125,13 @@ if __name__ == '__main__':
             
             latency = get_latency('log/temp_log.txt', type)
             print("Extracting latencies")
-            # for i in range(len(types)):
-            #     results[algo][traffic][types[i]].append(latencies[i])
             results[algo][traffic].append(latency)
             print("...done!")
 
     print("\nInjection rates: ", inj_rate)
     display_results(results, routing_algo, traffic_pattern)
-    draw_figures(results, routing_algo, traffic_pattern, inj_rate)
+    draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k)
 
     df = pd.DataFrame.from_dict(results)
     print(df)
-    df.to_csv(f'analysis/n2k2_{type.lower()}.csv', index=False)
+    df.to_csv(f'analysis/n{n}k{k}_{type.lower()}.csv', index=False)
