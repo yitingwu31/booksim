@@ -303,7 +303,7 @@ stats_out = stats_out/temp_{traffic}_{route_algo};
 
 
 if __name__ == "__main__":
-    k = 4 # Nodes per dimension
+    k = 2 # Nodes per dimension
     n = 2 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 

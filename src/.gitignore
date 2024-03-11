@@ -6,3 +6,4 @@ y.tab.h
 *.d
 watchlists/temp_*
 *.pkl
+stats_out/
