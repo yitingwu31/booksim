@@ -27,8 +27,8 @@ class GA_algo:
     # ==================
     # initialize SD pair table
     # ==================
-    self.ga_table = self.init_table()
-    # self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
+    # self.ga_table = self.init_table()
+    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -102,7 +102,7 @@ class GA_algo:
       while x < xf:
           x += 1
           sequence.append((x, y))
-      # ove in +y direction
+      # Move in +y direction
       while y < yf:
           y += 1
           sequence.append((x, y))
@@ -158,17 +158,16 @@ class GA_algo:
       with open(os.path.join('config', filename), 'w') as config_file:
           config_file.write(config_content.strip())
 
-  def score(self, candidate):
+  def score(self, candidate, traffic):
     # calculate its average latency of this path
     # ================
     paths = self.decode_chromosome_to_paths(candidate)
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
-    traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-    traffic = random.choice(traffic_patterns)
-    # traffic = "uniform"
-    self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=0.01)
+    
+    inj_rate = 0.01
+    self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=inj_rate)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
 
@@ -220,7 +219,15 @@ class GA_algo:
     print("\n-----------------------------------------\n")
     print("Starting running GA iterations")
     for gen in range(self.n_iter):
-      scores = [self.score(candidate) for candidate in self.chromosomes]
+
+      # traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+      # if np.log2(self.N) % 2 != 0:
+      #   traffic_patterns.remove("transpose")
+      # traffic = random.choice(traffic_patterns)
+      traffic = "bitcomp"
+      print(f"Trained on traffic={traffic} ")
+
+      scores = [self.score(candidate, traffic) for candidate in self.chromosomes]
       print(f"\n{gen} iter scores:")
       print(scores)
       
@@ -270,34 +277,29 @@ class GA_algo:
         best_chrom_over_history = best_chrom
         best_score_over_history = best_score
       
+      best_paths = self.decode_chromosome_to_paths(best_chrom)
+      self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
+      
     return best_score_over_history, best_chrom_over_history
 
 if __name__ == "__main__":
   # define range for input
-  k = 3
-  n = 2
-  n_iter = 4 # num generations
+  k = 2
+  n = 3
+  n_iter = 7 # num generations
   n_bits = 3
-  # n_chrom = 4
   n_chrom = 2**n_bits  #population size
   r_cross = 0.5 #crossover rate
   r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
 
   ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
-  # print(ga1.ga_table)
 
-  # print(len(ga1.chromosomes))
-  # print(len(ga1.sd_pair_mapping))
-
-  example_chromosome = ga1.chromosomes[0]
-  
+  # example_chromosome = ga1.chromosomes[0]
   # Decode the chromosome to paths using the ga_table
-  decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
+  # decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
   # print(decoded_paths)
-
-  # Save the decoded paths to a JSON file
-  # ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
-  ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
+  # Save the decoded paths to a txt file
+  # ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
   best_score, best_chrom = ga1.run_GA()
 

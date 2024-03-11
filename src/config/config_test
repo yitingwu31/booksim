@@ -1,8 +1,8 @@
 topology = mesh;
-k = 3;
-n = 2;
+k = 2;
+n = 3;
 
-routing_function = valiant;
+routing_function = ga;
 
 // Flow control
 num_vcs     = 8;
@@ -23,11 +23,12 @@ input_speedup     = 2;
 output_speedup    = 1;
 internal_speedup  = 1.0;
 
-traffic = randperm;
+traffic = neighbor;
 packet_size = 5;
 
 sim_type = latency;
 
-injection_rate = 0.30000000000000004;
+injection_rate = 0.19;
+injection_rate_uses_flits=1;
 
-GA_path_file = ga_paths_n2_k3.txt;
+GA_path_file = ga_paths_n3_k2.txt;

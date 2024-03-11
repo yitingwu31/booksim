@@ -8,7 +8,7 @@ from extract_path import *
 
 
 
-algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "dim_order_ni", "im_order_pni", "valiant", "planar_adapt", "romm", "romm_ni", "chaos"]
+algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "dim_order_ni", "dim_order_pni", "valiant", "planar_adapt", "romm", "romm_ni", "chaos"]
 injec_start_rate = 0.2 #default to 0.3?
 
 class GA_init():
@@ -48,14 +48,13 @@ class GA_init():
             # cur_inj_rate = self.injection_rates
             cur_time_run = 10000
             traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
-            # traffic_patterns = ["uniform", "bitcomp"]
+            if np.log2(self.N) % 2 != 0:
+                traffic_patterns.remove("transpose")
             
             route_algo = self.route_table[i]
             for traffic in traffic_patterns:
                 
-                inj_rate_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2]
-                if route_algo in ["min_adapt", "adaptive_xy_yx", "dim_order"]:
-                    inj_rate_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+                inj_rate_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3]
 
                 for cur_inj_rate in inj_rate_list:
                     # ============================
@@ -66,17 +65,17 @@ class GA_init():
                     
                     self.generate_watch_list('watchlists/watch_temp')
                     self.generate_config_file(filename="ga_test_temp", watch_file='watchlists/watch_temp',
+                                            watch_path_out="watchlists/temp_watch_out",
                                             route_algo=route_algo, inj_rate=cur_inj_rate, 
                                             cur_time=cur_time_run, traffic=traffic, 
                                             packet_size=self.packet_size)
-                    with open(f'log/temp_log_{i}.txt', 'w') as log_file:
+                    with open(f'log/temp_log.txt', 'w') as log_file:
                         subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
                     
                     # ============================
                     # extract unique path from simulation watch_path_out
                     # ============================
-                    filename = f"watchlists/temp_{traffic}_{route_algo}"
-                    FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename=filename)
+                    FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename="watchlists/temp_watch_out")
                     uni_paths = FlitPathTable.extract_unique_path()
                     print(f"unipath = {len(uni_paths)}")
                     # ============================
@@ -109,6 +108,7 @@ class GA_init():
             # ============================
             step = i
             self.generate_config_file(filename="ga_test_temp", watch_file="watchlists/watch_init",
+                                    watch_path_out="watchlists/temp_watch_init_out",
                                     traffic=traffic, step=step, route_algo=route_algo, inj_rate=inj_rate)
             subprocess.run(["./booksim", "config/ga_test_temp"])
             if i == 1:
@@ -118,8 +118,7 @@ class GA_init():
             # ============================
             # extract unipath from simulation watch_path_out
             # ============================
-            filename = f"watchlists/temp_{traffic}_{route_algo}"
-            FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename=filename)
+            FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename="watchlists/temp_watch_init_out")
             uni_paths = FlitPathTable.extract_unique_path()
             
             # ============================
@@ -258,7 +257,7 @@ class GA_init():
             for i in range(self.N):
                 f.write(f"{i * self.packet_size}\n")
     
-    def generate_config_file(self, filename, watch_file, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000, packet_size=1):
+    def generate_config_file(self, filename, watch_file, watch_path_out, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000, packet_size=1):
         config_content = f""" 
 
 topology = mesh;
@@ -297,7 +296,7 @@ sim_type = latency;
 injection_rate = {inj_rate};
 
 watch_file = {watch_file};
-watch_path_out = watchlists/temp_{traffic}_{route_algo};
+watch_path_out = {watch_path_out};
 stats_out = stats_out/temp_{traffic}_{route_algo};
 """
         # Ensure the config directory exists
@@ -310,7 +309,7 @@ stats_out = stats_out/temp_{traffic}_{route_algo};
 
 if __name__ == "__main__":
     k = 2 # Nodes per dimension
-    n = 2 # Dimension of mesh
+    n = 3 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 
     # source_dest_pairs = ((k ** n) - 1)*(k ** n)
