@@ -8,11 +8,11 @@ from extract_path import *
 
 
 
-algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
+algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "dim_order_ni", "im_order_pni", "valiant", "planar_adapt", "romm", "romm_ni", "chaos"]
 injec_start_rate = 0.2 #default to 0.3?
 
 class GA_init():
-    def __init__(self, k, n, b, rt=algos_available, injection_rates=injec_start_rate):
+    def __init__(self, k, n, b, rt=algos_available, injection_rates=injec_start_rate, packet_size=5):
         self.k = k
         self.n = n
         self.b = b
@@ -33,7 +33,7 @@ class GA_init():
         # SD_table contains only one path for each SD pair
         self.SD_table = [None] * (self.N * (self.N-1))
 
-        self.packet_size = 2
+        self.packet_size = packet_size
         self.generate_init_watch_list(filename="watchlists/watch_init")
 
     def fill(self):
@@ -44,51 +44,57 @@ class GA_init():
         # len(self._table[i]) = 1
         # ============================
 
-        for i in tqdm(range(self.num_paths_per_SDpair), desc="Generating Path Table", unit="Rows"):
-            cur_inj_rate = self.injection_rates
+        for i in tqdm(range(len(algos_available)), desc="Generating Path Table", unit="Rows"):
+            # cur_inj_rate = self.injection_rates
             cur_time_run = 10000
-            traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+            traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
             # traffic_patterns = ["uniform", "bitcomp"]
             
+            route_algo = self.route_table[i]
             for traffic in traffic_patterns:
-
-                # ============================
-                # run booksim simulation
-                # ============================
-                route_algo = self.route_table[i]
-                print(f"............. run booksim with route_algo={route_algo}, traffic={traffic} .............")
                 
-                self.generate_watch_list('watchlists/watch_temp')
-                self.generate_config_file(filename="ga_test_temp", watch_file='watchlists/watch_temp',
-                                        route_algo=route_algo, inj_rate=cur_inj_rate, 
-                                        cur_time=cur_time_run, traffic=traffic, 
-                                        packet_size=self.packet_size)
-                with open(f'log/temp_log_{i}.txt', 'w') as log_file:
-                    subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
-                
-                # ============================
-                # extract unique path from simulation watch_path_out
-                # ============================
-                filename = f"watchlists/temp_{traffic}_{route_algo}"
-                FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename=filename)
-                uni_paths = FlitPathTable.extract_unique_path()
+                inj_rate_list = [0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2]
+                if route_algo in ["min_adapt", "adaptive_xy_yx", "dim_order"]:
+                    inj_rate_list = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
 
-                # ============================
-                # fill in _table with uniPath
-                # ============================
-                self.fill_table_with_uniPath(uni_paths)
+                for cur_inj_rate in inj_rate_list:
+                    # ============================
+                    # run booksim simulation
+                    # ============================
+                    
+                    print(f"............. run booksim with route_algo={route_algo}, traffic={traffic} .............")
+                    
+                    self.generate_watch_list('watchlists/watch_temp')
+                    self.generate_config_file(filename="ga_test_temp", watch_file='watchlists/watch_temp',
+                                            route_algo=route_algo, inj_rate=cur_inj_rate, 
+                                            cur_time=cur_time_run, traffic=traffic, 
+                                            packet_size=self.packet_size)
+                    with open(f'log/temp_log_{i}.txt', 'w') as log_file:
+                        subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
+                    
+                    # ============================
+                    # extract unique path from simulation watch_path_out
+                    # ============================
+                    filename = f"watchlists/temp_{traffic}_{route_algo}"
+                    FlitPathTable = Flit_path_table(n=self.n, k=self.k, filename=filename)
+                    uni_paths = FlitPathTable.extract_unique_path()
+                    print(f"unipath = {len(uni_paths)}")
+                    # ============================
+                    # fill in _table with uniPath
+                    # ============================
+                    self.fill_table_with_uniPath(uni_paths)
 
-                # print("new table size for each SD pair")
-                for tt in range(len(self._table)):
-                    print(len(self._table[tt]), end="   ")
-                print("\n")
-                
-                # ============================
-                # update config combination
-                # ============================
-                if cur_inj_rate < 0.98:
-                    cur_inj_rate += 0.02
-                cur_time_run += 4000
+                    # print("new table size for each SD pair")
+                    for tt in range(len(self._table)):
+                        print(len(self._table[tt]), end="   ")
+                    print("\n")
+                    
+                    # ============================
+                    # update config combination
+                    # ============================
+                    # if cur_inj_rate < 0.98:
+                    #     cur_inj_rate += 0.02
+                    # cur_time_run += 4000
 
         self.fill_table_row()
 
@@ -286,7 +292,7 @@ packet_size = {packet_size};
 
 sim_type = latency;
 
-sample_period  = {cur_time};  
+// sample_period  = {cur_time};  
 
 injection_rate = {inj_rate};
 

@@ -22,7 +22,7 @@ class GA_algo:
     self.n_iter = n_iter
     self.r_cross = r_cross
     self.r_mut = r_mut
-    self.packet_size = 2
+    self.packet_size = 5
 
     # ==================
     # initialize SD pair table
@@ -37,7 +37,7 @@ class GA_algo:
     self.sd_pair_mapping = self.generate_sd_pair_mapping()
 
   def init_table(self):
-    ga_init = GA_init(k=self.k, n=self.n, b=self.n_bits)
+    ga_init = GA_init(k=self.k, n=self.n, b=self.n_bits, packet_size=self.packet_size)
     ga_init.fill()
     ga_init.display_table()
     ga_init.save_to_pickle(f'path_table_n{n}_k{k}.pkl')
@@ -168,10 +168,10 @@ class GA_algo:
     traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
     traffic = random.choice(traffic_patterns)
     # traffic = "uniform"
-    self.generate_config_file(filename="ga_test_temp", traffic=traffic, step=1, route_algo="ga", inj_rate=0.01)
+    self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=0.01)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
-    # subprocess.run(["./booksim", "config/ga_test_temp"])
+
     LogData = Booksim_log('log/ga_test_temp.log')
     flit_latency = LogData.get_average_latency("Flit")
     # print("\n =========== Flit average latency: ", flit_latency, "\n")
@@ -212,11 +212,11 @@ class GA_algo:
     return pop[selection_ix]
 
   def run_GA(self):
-    best_chrom = None
-    best_score = None
+    # best_chrom = None
+    # best_score = None
     num_generations_without_improvement = 0
     convergence_threshold = 4
-    prev_best_score = float('inf')
+    # prev_best_score = float('inf')
     print("\n-----------------------------------------\n")
     print("Starting running GA iterations")
     for gen in range(self.n_iter):
@@ -224,25 +224,28 @@ class GA_algo:
       print(f"\n{gen} iter scores:")
       print(scores)
       
+      best_chrom = None
+      best_score = None
+      prev_best_score = float('inf')
       # checking exit
       for idx, score in enumerate(scores):
         if best_score is None or score < best_score:
             best_score = score
             best_chrom = self.chromosomes[idx]
         # exit on convergence
-        if prev_best_score is not None:
-          if best_score >= prev_best_score and gen > n_iter/2:
-            num_generations_without_improvement += 1
-        else:
-            num_generations_without_improvement = 0
+        # if prev_best_score is not None:
+        #   if best_score >= prev_best_score and gen > n_iter/2:
+        #     num_generations_without_improvement += 1
+        # else:
+        #     num_generations_without_improvement = 0
         prev_best_score = best_score
       print(f"best score is {best_score}")
       print(f"best chrom is {best_chrom}")
       print(f"\n==============================")
 
-      if num_generations_without_improvement >= convergence_threshold:
-        print("Convergence reached. Exiting loop.")
-        break
+      # if num_generations_without_improvement >= convergence_threshold:
+      #   print("Convergence reached. Exiting loop.")
+      #   break
       
       # select parents
       selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
@@ -270,7 +273,7 @@ if __name__ == "__main__":
   # define range for input
   k = 4
   n = 2
-  n_iter = 2 # num generations
+  n_iter = 4 # num generations
   n_bits = 3
   # n_chrom = 4
   n_chrom = 2**n_bits  #population size

@@ -1,5 +1,5 @@
 topology = mesh;
-      k = 2;
+      k = 4;
       n = 2;
 
       routing_function = ga;
@@ -23,13 +23,13 @@ topology = mesh;
       output_speedup    = 1;
       internal_speedup  = 1.0;
 
-      traffic = transpose;
-      packet_size = 2;
+      traffic = diagonal;
+      packet_size = 5;
 
       sim_type = latency;
 
       sample_period  = 1000;  
 
-      injection_rate = 0.1;
+      injection_rate = 0.01;
 
       GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later

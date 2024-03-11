@@ -68,7 +68,7 @@ sim_type = latency;
 
 injection_rate = {inj_rate};
 
-GA_path_file = ga_paths_n2_k2.txt;
+GA_path_file = ga_paths_n{n}_k{k}.txt;
 """
    os.makedirs('config', exist_ok=True)
 
@@ -91,17 +91,20 @@ def draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k):
       plt.xlabel('Flit injection rate')
       plt.ylabel(f'Average {type.lower()} latency')
       for algo in routing_algo[::-1]:
+         print(algo)
          good_len = len(results[algo][traffic])
          if float('inf') in results[algo][traffic]:
             good_len = results[algo][traffic].index(float('inf'))
          plt.plot(inj_rate[:good_len], results[algo][traffic][:good_len], label=algo)
-      plt.legend('upper left')
+      plt.legend()
+      # plt.legend('upper left')
       plt.savefig(f'analysis/plots/n{n}k{k}_{type.lower()}_{traffic}')
-   plt.show()
+      plt.show()
 
 if __name__ == '__main__':
     # routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
-    traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+   #  traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+    traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm"]
     routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
     # traffic_pattern = ["uniform", "bitcomp", "transpose"]
     inj_rate = [0.05 * i for i in range(1, 7)]
