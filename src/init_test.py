@@ -25,7 +25,7 @@ class GA_init():
 
         # _table should contain at most 2**b paths for each SD pair
         self.num_paths_per_SDpair = 2**b
-        # self.num_paths_per_SDpair = 2
+        # self.num_paths_per_SDpair = 4
         self._table = [None] * (self.N * (self.N-1))
         
 

@@ -258,11 +258,12 @@ class GA_algo:
 
 if __name__ == "__main__":
   # define range for input
-  k = 2
+  k = 4
   n = 2
   n_iter = 1 # num generations
-  n_chrom = 4  #population size
   n_bits = 3
+  # n_chrom = 4
+  n_chrom = 2**n_bits  #population size
   r_cross = 0.5 #crossover rate
   r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
 
