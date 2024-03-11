@@ -284,3 +284,6 @@ if __name__ == "__main__":
   ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
   best_score, best_chrom = ga1.run_GA()
+
+  best_paths = ga1.decode_chromosome_to_paths(best_chrom)
+  ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')
