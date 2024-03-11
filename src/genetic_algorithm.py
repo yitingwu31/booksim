@@ -277,15 +277,16 @@ class GA_algo:
         best_chrom_over_history = best_chrom
         best_score_over_history = best_score
       
-      best_paths = self.decode_chromosome_to_paths(best_chrom)
-      self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
+      if best_chrom is not None:
+        best_paths = self.decode_chromosome_to_paths(best_chrom)
+        self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
       
     return best_score_over_history, best_chrom_over_history
 
 if __name__ == "__main__":
   # define range for input
   k = 2
-  n = 3
+  n = 2
   n_iter = 7 # num generations
   n_bits = 3
   n_chrom = 2**n_bits  #population size
@@ -303,5 +304,6 @@ if __name__ == "__main__":
 
   best_score, best_chrom = ga1.run_GA()
 
-  best_paths = ga1.decode_chromosome_to_paths(best_chrom)
-  ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')
+  if best_chrom is not None:
+    best_paths = ga1.decode_chromosome_to_paths(best_chrom)
+    ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')

@@ -1,6 +1,6 @@
 topology = mesh;
       k = 2;
-      n = 3;
+      n = 2;
 
       routing_function = ga;
 

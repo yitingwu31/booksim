@@ -107,51 +107,12 @@ if __name__ == '__main__':
    # ======================================
    # routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
    # traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
-   # routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
-   # traffic_pattern = ["uniform", "bitcomp", "diagonal", "tornado", "neighbor"]
-   # inj_rate = [0.01 * i for i in range(1, 20)]
-   # _type = 'Packet'
-
-   # results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
-
-   # k = 2
-   # n = 3
-
-   # config_file = 'config_test'
-
-   # for rate in inj_rate:
-   #    for traffic in traffic_pattern:
-   #       for algo in routing_algo:
-   #          generate_config_file(config_file, k, n, algo, traffic, rate)
-   #          with open(f'log/temp_log.txt', 'w') as log_file:
-   #                print("\n", f"Start running algo: {algo}  traffic: {traffic}  inj_rate: {rate}")
-   #                subprocess.run(["./booksim", f"config/{config_file}"], stdout=log_file, stderr=log_file)
-   #                print("...done!")
-         
-   #          latency = get_latency('log/temp_log.txt', _type)
-   #          print("Extracting latencies")
-   #          results[algo][traffic].append(latency)
-   #          print("...done!")
-
-   # print("\nInjection rates: ", inj_rate)
-   # display_results(results, routing_algo, traffic_pattern)
-   # draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k)
-
-   # df = pd.DataFrame.from_dict(results)
-   # print(df)
-   # df.to_csv(f'analysis/n{n}k{k}_{_type.lower()}.csv', index=False)
-
-
-   # ======================================
-   # compare different GA iteration
-   # ======================================
-   routing_algo = "ga"
-   iterations = 7
-   traffic_pattern = ["uniform", "bitcomp", "diagonal", "tornado", "neighbor"]
-   inj_rate = [0.01 * i for i in range(1, 20)]
+   routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
+   traffic_pattern = ["uniform", "bitcomp", "diagonal",  "transpose", "tornado", "neighbor"]
+   inj_rate = [0.01 * i for i in range(1, 25)]
    _type = 'Packet'
-   
-   results = {f"ga_iter{gen}": {traffic: [] for traffic in traffic_pattern} for gen in range(iterations)}
+
+   results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
 
    k = 2
    n = 3
@@ -160,24 +121,63 @@ if __name__ == '__main__':
 
    for rate in inj_rate:
       for traffic in traffic_pattern:
-         for gen in range(iterations):
-            path_txt = f"ga_paths_n{n}_k{k}_iter{gen}.txt"
-            generate_config_file(config_file, k, n, "ga", traffic, rate)
+         for algo in routing_algo:
+            generate_config_file(config_file, k, n, algo, traffic, rate)
             with open(f'log/temp_log.txt', 'w') as log_file:
-                  print("\n", f"Start running algo: ga_iter{gen}  traffic: {traffic}  inj_rate: {rate}")
+                  print("\n", f"Start running algo: {algo}  traffic: {traffic}  inj_rate: {rate}")
                   subprocess.run(["./booksim", f"config/{config_file}"], stdout=log_file, stderr=log_file)
                   print("...done!")
          
             latency = get_latency('log/temp_log.txt', _type)
             print("Extracting latencies")
-            results[f"ga_iter{gen}"][traffic].append(latency)
+            results[algo][traffic].append(latency)
             print("...done!")
 
    print("\nInjection rates: ", inj_rate)
-
-   display_results(results, results.keys(), traffic_pattern)
-   draw_figures(results, list(results.keys()), traffic_pattern, inj_rate, _type, n, k)
+   display_results(results, routing_algo, traffic_pattern)
+   draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k)
 
    df = pd.DataFrame.from_dict(results)
    print(df)
    df.to_csv(f'analysis/n{n}k{k}_{_type.lower()}.csv', index=False)
+
+
+   # ======================================
+   # compare different GA iteration
+   # ======================================
+   # routing_algo = "ga"
+   # iterations = 7
+   # traffic_pattern = ["uniform", "bitcomp", "diagonal", "tornado", "neighbor"]
+   # inj_rate = [0.01 * i for i in range(1, 20)]
+   # _type = 'Packet'
+   
+   # results = {f"ga_iter{gen}": {traffic: [] for traffic in traffic_pattern} for gen in range(iterations)}
+
+   # k = 2
+   # n = 3
+
+   # config_file = 'config_test'
+
+   # for rate in inj_rate:
+   #    for traffic in traffic_pattern:
+   #       for gen in range(iterations):
+   #          path_txt = f"ga_paths_n{n}_k{k}_iter{gen}.txt"
+   #          generate_config_file(config_file, k, n, "ga", traffic, rate)
+   #          with open(f'log/temp_log.txt', 'w') as log_file:
+   #                print("\n", f"Start running algo: ga_iter{gen}  traffic: {traffic}  inj_rate: {rate}")
+   #                subprocess.run(["./booksim", f"config/{config_file}"], stdout=log_file, stderr=log_file)
+   #                print("...done!")
+         
+   #          latency = get_latency('log/temp_log.txt', _type)
+   #          print("Extracting latencies")
+   #          results[f"ga_iter{gen}"][traffic].append(latency)
+   #          print("...done!")
+
+   # print("\nInjection rates: ", inj_rate)
+
+   # display_results(results, results.keys(), traffic_pattern)
+   # draw_figures(results, list(results.keys()), traffic_pattern, inj_rate, _type, n, k)
+
+   # df = pd.DataFrame.from_dict(results)
+   # print(df)
+   # df.to_csv(f'analysis/n{n}k{k}_{_type.lower()}.csv', index=False)

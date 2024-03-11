@@ -2,7 +2,7 @@ topology = mesh;
 k = 2;
 n = 3;
 
-routing_function = ga;
+routing_function = valiant;
 
 // Flow control
 num_vcs     = 8;
@@ -28,7 +28,7 @@ packet_size = 5;
 
 sim_type = latency;
 
-injection_rate = 0.19;
+injection_rate = 0.24;
 injection_rate_uses_flits=1;
 
 GA_path_file = ga_paths_n3_k2.txt;
