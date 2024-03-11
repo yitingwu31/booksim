@@ -7,3 +7,4 @@ y.tab.h
 watchlists/temp_*
 *.pkl
 stats_out/
+analysis/

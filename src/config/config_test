@@ -1,5 +1,5 @@
 topology = mesh;
-k = 4;
+k = 3;
 n = 2;
 
 routing_function = valiant;
@@ -30,4 +30,4 @@ sim_type = latency;
 
 injection_rate = 0.30000000000000004;
 
-GA_path_file = ga_paths_n2_k4.txt;
+GA_path_file = ga_paths_n2_k3.txt;

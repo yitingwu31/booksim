@@ -108,11 +108,11 @@ if __name__ == '__main__':
     routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
     # traffic_pattern = ["uniform", "bitcomp", "transpose"]
     inj_rate = [0.05 * i for i in range(1, 7)]
-    type = 'Packet'
+    _type = 'Packet'
 
     results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
 
-    k = 4
+    k = 3
     n = 2
 
     config_file = 'config_test'
@@ -126,15 +126,15 @@ if __name__ == '__main__':
                 subprocess.run(["./booksim", f"config/{config_file}"], stdout=log_file, stderr=log_file)
                 print("...done!")
             
-            latency = get_latency('log/temp_log.txt', type)
+            latency = get_latency('log/temp_log.txt', _type)
             print("Extracting latencies")
             results[algo][traffic].append(latency)
             print("...done!")
 
     print("\nInjection rates: ", inj_rate)
     display_results(results, routing_algo, traffic_pattern)
-    draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k)
+    draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k)
 
     df = pd.DataFrame.from_dict(results)
     print(df)
-    df.to_csv(f'analysis/n{n}k{k}_{type.lower()}.csv', index=False)
+    df.to_csv(f'analysis/n{n}k{k}_{_type.lower()}.csv', index=False)

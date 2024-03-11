@@ -173,9 +173,9 @@ class GA_algo:
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
 
     LogData = Booksim_log('log/ga_test_temp.log')
-    flit_latency = LogData.get_average_latency("Flit")
-    # print("\n =========== Flit average latency: ", flit_latency, "\n")
-    return flit_latency
+    packet_latency = LogData.get_average_latency("Packet")
+
+    return packet_latency
 
   def mutation(self, chromosome):  
     # choose one random gene -> mutate a bit in its index
@@ -212,8 +212,8 @@ class GA_algo:
     return pop[selection_ix]
 
   def run_GA(self):
-    # best_chrom = None
-    # best_score = None
+    best_chrom_over_history = None
+    best_score_over_history = float('inf')
     num_generations_without_improvement = 0
     convergence_threshold = 4
     # prev_best_score = float('inf')
@@ -266,12 +266,15 @@ class GA_algo:
         new_chromosomes.append(c2)
 
       self.chromosomes = new_chromosomes
+      if best_score < best_score_over_history:
+        best_chrom_over_history = best_chrom
+        best_score_over_history = best_score
       
-    return best_score, best_chrom
+    return best_score_over_history, best_chrom_over_history
 
 if __name__ == "__main__":
   # define range for input
-  k = 4
+  k = 3
   n = 2
   n_iter = 4 # num generations
   n_bits = 3
