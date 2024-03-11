@@ -274,8 +274,8 @@ class GA_algo:
 
 if __name__ == "__main__":
   # define range for input
-  k = 3
-  n = 2
+  k = 2
+  n = 3
   n_iter = 4 # num generations
   n_bits = 3
   # n_chrom = 4
@@ -300,6 +300,8 @@ if __name__ == "__main__":
   ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
   best_score, best_chrom = ga1.run_GA()
+
+  print("Overal best score: ", best_score, "\n")
 
   best_paths = ga1.decode_chromosome_to_paths(best_chrom)
   ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')

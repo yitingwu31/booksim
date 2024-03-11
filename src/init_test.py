@@ -9,6 +9,7 @@ from extract_path import *
 
 
 algos_available = ["min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "dim_order_ni", "im_order_pni", "valiant", "planar_adapt", "romm", "romm_ni", "chaos"]
+# algos_available = ["min_adapt"]
 injec_start_rate = 0.2 #default to 0.3?
 
 class GA_init():

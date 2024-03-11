@@ -103,16 +103,17 @@ def draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k):
 
 if __name__ == '__main__':
     # routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
-    traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
-    routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
-   #  traffic_pattern = ["uniform", "bitcomp", "transpose"]
-    inj_rate = [0.02 * i for i in range(1, 7)]
+   #  traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
+   #  routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
+    routing_algo = ["ga", "min_adapt"]
+    traffic_pattern = ["uniform", "bitcomp", "transpose"]
+    inj_rate = [0.01 * i for i in range(1, 7)]
     _type = 'Packet'
 
     results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
 
-    k = 3
-    n = 2
+    k = 2
+    n = 3
 
     config_file = 'config_test'
 
