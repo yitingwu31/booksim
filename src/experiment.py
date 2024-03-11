@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 
-def get_latency(filename, type):
+def get_latency(filename, _type):
     latency = float('inf')
 
     # Extract average information
@@ -15,15 +15,15 @@ def get_latency(filename, type):
     idx = lines.index("====== Overall Traffic Statistics ======")
     log = lines[idx:]
 
-    # Extract latency of type packet / network / flit
+    # Extract latency of _type packet / network / flit
     if log == []:
       print("\nUnstable simulation has no average latencies.")
       return latency
     
-    keyword = type + " latency average"
+    keyword = _type + " latency average"
     match = [line for line in log if line.startswith(keyword)]
     if len(match) == 0:
-        print("\nUnable to find", type, "average latency.")
+        print("\nUnable to find", _type, "average latency.")
         return latency
     
     line = match[0]
@@ -67,6 +67,7 @@ packet_size = 5;
 sim_type = latency;
 
 injection_rate = {inj_rate};
+injection_rate_uses_flits=1;
 
 GA_path_file = ga_paths_n{n}_k{k}.txt;
 """
@@ -84,31 +85,29 @@ def display_results(results, routing_algo, traffic_pattern):
          print(results[algo][traffic])
    print("\n")
 
-def draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k):
+def draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k):
    for traffic in traffic_pattern:
       plt.figure()
       plt.title(f"{traffic} traffic")
       plt.xlabel('Flit injection rate')
-      plt.ylabel(f'Average {type.lower()} latency')
+      plt.ylabel(f'Average {_type.lower()} latency')
       for algo in routing_algo[::-1]:
-         print(algo)
+         # print(algo)
          good_len = len(results[algo][traffic])
          if float('inf') in results[algo][traffic]:
             good_len = results[algo][traffic].index(float('inf'))
          plt.plot(inj_rate[:good_len], results[algo][traffic][:good_len], label=algo)
-      plt.legend()
-      # plt.legend('upper left')
-      plt.savefig(f'analysis/plots/n{n}k{k}_{type.lower()}_{traffic}')
+      plt.legend(loc='upper left')
+      plt.savefig(f'analysis/plots/n{n}k{k}_{_type.lower()}_{traffic}')
       plt.show()
 
 if __name__ == '__main__':
     # routing_algo = ["ga", "min_adapt", "xy_yx", "adaptive_xy_yx", "dim_order", "valiant", "planar_adapt", "romm", "romm_ni"]
-   #  traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-    traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm"]
+    traffic_pattern = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
     routing_algo = ["ga", "min_adapt", "adaptive_xy_yx", "valiant"]
-    # traffic_pattern = ["uniform", "bitcomp", "transpose"]
-    inj_rate = [0.05 * i for i in range(1, 7)]
-    type = 'Packet'
+   #  traffic_pattern = ["uniform", "bitcomp", "transpose"]
+    inj_rate = [0.02 * i for i in range(1, 7)]
+    _type = 'Packet'
 
     results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
 
@@ -126,15 +125,15 @@ if __name__ == '__main__':
                 subprocess.run(["./booksim", f"config/{config_file}"], stdout=log_file, stderr=log_file)
                 print("...done!")
             
-            latency = get_latency('log/temp_log.txt', type)
+            latency = get_latency('log/temp_log.txt', _type)
             print("Extracting latencies")
             results[algo][traffic].append(latency)
             print("...done!")
 
     print("\nInjection rates: ", inj_rate)
     display_results(results, routing_algo, traffic_pattern)
-    draw_figures(results, routing_algo, traffic_pattern, inj_rate, type, n, k)
+    draw_figures(results, routing_algo, traffic_pattern, inj_rate, _type, n, k)
 
     df = pd.DataFrame.from_dict(results)
     print(df)
-    df.to_csv(f'analysis/n{n}k{k}_{type.lower()}.csv', index=False)
+    df.to_csv(f'analysis/n{n}k{k}_{_type.lower()}.csv', index=False)
