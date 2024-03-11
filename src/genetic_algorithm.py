@@ -27,8 +27,8 @@ class GA_algo:
     # ==================
     # initialize SD pair table
     # ==================
-    # self.ga_table = self.init_table()
-    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
+    self.ga_table = self.init_table()
+    # self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -167,7 +167,8 @@ class GA_algo:
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
     traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
     traffic = random.choice(traffic_patterns)
-    self.generate_config_file(filename="ga_test_temp", traffic=traffic, step=1, route_algo="ga", inj_rate=0.1)
+    # traffic = "uniform"
+    self.generate_config_file(filename="ga_test_temp", traffic=traffic, step=1, route_algo="ga", inj_rate=0.01)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
     # subprocess.run(["./booksim", "config/ga_test_temp"])
@@ -267,7 +268,7 @@ class GA_algo:
 
 if __name__ == "__main__":
   # define range for input
-  k = 2
+  k = 4
   n = 2
   n_iter = 2 # num generations
   n_bits = 3
