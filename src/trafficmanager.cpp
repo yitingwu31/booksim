@@ -549,7 +549,7 @@ TrafficManager::TrafficManager( const Configuration &config, const vector<Networ
         }
 
         _src_stat[c].resize(_nodes);
-        _fid_stat[c].resize(5 * _nodes);
+        _fid_stat[c].resize(10 * _nodes);
 
         _sent_packets[c].resize(_nodes, 0);
         _accepted_packets[c].resize(_nodes, 0);
@@ -861,7 +861,7 @@ void TrafficManager::_GeneratePacket( int source, int stype,
                    << "." << endl;
     }
     
-    if (_src_stat[cl][source] < 5) {
+    if (_src_stat[cl][source] < 10) {
         _fid_stat[cl][source + _nodes * _src_stat[cl][source]] = _cur_id;
         _src_stat[cl][source] += 1;
     }
@@ -1342,7 +1342,7 @@ void TrafficManager::_ClearStats( )
         _frag_stats[c]->Clear( );
 
         _src_stat[c].assign(_nodes, 0);
-        _fid_stat[c].assign(5 * _nodes, 0);
+        _fid_stat[c].assign(10 * _nodes, 0);
 
         _sent_packets[c].assign(_nodes, 0);
         _accepted_packets[c].assign(_nodes, 0);
@@ -1931,7 +1931,7 @@ void TrafficManager::WriteStats(ostream & os) const {
         }
         os << "];" << endl
            << "_fid_stat(" << c+1 << ",:) = [ ";
-        for ( int d = 0; d < 5 * _nodes; ++d ) {
+        for ( int d = 0; d < 10 * _nodes; ++d ) {
             os << (int)_fid_stat[c][d]  << " ";
         }
         os << "];" << endl;

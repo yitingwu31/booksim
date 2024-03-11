@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
     results = {key: {traffic: [] for traffic in traffic_pattern} for key in routing_algo}
 
-    k = 4
+    k = 3
     n = 2
 
     config_file = 'config_test'

@@ -58,15 +58,15 @@ class Booksim_log:
     idx = lines.index("====== Overall Traffic Statistics ======")
     return lines[idx:]
   
-  def get_average_latency(self, type):
+  def get_average_latency(self, _type):
     if self.log == []:
       print("\nUnstable simulation has no average latencies.")
       return float('inf')
     
-    keyword = type + " latency average"
+    keyword = _type + " latency average"
     match = [line for line in self.log if line.startswith(keyword)]
     if len(match) == 0:
-      print("\nUnable to find", type, "average latency.")
+      print("\nUnable to find", _type, "average latency.")
       return -1
     
     line = match[0]
