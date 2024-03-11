@@ -1,4 +1,5 @@
 import numpy as np
+import random
 from numpy.random import randint, rand
 import pickle
 import json
@@ -26,8 +27,8 @@ class GA_algo:
     # ==================
     # initialize SD pair table
     # ==================
-    self.ga_table = self.init_table()
-    # self.ga_table = self.load_from_pickle("path_table_n2_k2.pkl")
+    # self.ga_table = self.init_table()
+    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -164,10 +165,12 @@ class GA_algo:
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
-    self.generate_config_file(filename="ga_test_temp", traffic="uniform", step=1, route_algo="ga", inj_rate=0.1)
-    # with open(f'log/ga_test_temp.log', 'w') as log_file:  #TODO: .log or .txt
-    #   subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
-    subprocess.run(["./booksim", "config/ga_test_temp"])
+    traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+    traffic = random.choice(traffic_patterns)
+    self.generate_config_file(filename="ga_test_temp", traffic=traffic, step=1, route_algo="ga", inj_rate=0.1)
+    with open(f'log/ga_test_temp.log', 'w') as log_file:  
+      subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
+    # subprocess.run(["./booksim", "config/ga_test_temp"])
     LogData = Booksim_log('log/ga_test_temp.log')
     flit_latency = LogData.get_average_latency("Flit")
     # print("\n =========== Flit average latency: ", flit_latency, "\n")
@@ -242,25 +245,31 @@ class GA_algo:
       
       # select parents
       selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
+
       # create next generation
-      children = list()
+      new_chromosomes = []
       # crossover and mutation
       for i in range(0, n_chrom, 2):
         # get selected parents in pairs
         p1, p2 = selected[i], selected[i+1]
         c1, c2 = self.crossover(p1, p2)
-        children += c1 + c2
-      for c in children:
-        self.mutation(c)
-      self.chromosomes = children
+
+        for c_idx in range(len(c1)):
+          c1[c_idx] = self.mutation(c1[c_idx])
+          c2[c_idx] = self.mutation(c2[c_idx])
+
+        new_chromosomes.append(c1)
+        new_chromosomes.append(c2)
+
+      self.chromosomes = new_chromosomes
       
     return best_score, best_chrom
 
 if __name__ == "__main__":
   # define range for input
-  k = 4
+  k = 2
   n = 2
-  n_iter = 1 # num generations
+  n_iter = 2 # num generations
   n_bits = 3
   # n_chrom = 4
   n_chrom = 2**n_bits  #population size
