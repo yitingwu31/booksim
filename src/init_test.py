@@ -26,8 +26,8 @@ class GA_init():
         # self._table = [[0 for _ in range((k**n-1)*k**n)] for _ in range(2**b)]
         # self._table = [{} for _ in range(2**b)]
         # _table should contain at most 2**b paths for each SD pair
-        # self.num_paths_per_SDpair = 2**b
-        self.num_paths_per_SDpair = 2
+        self.num_paths_per_SDpair = 2**b
+        # self.num_paths_per_SDpair = 2
         self._table = [None] * (self.N * (self.N-1))
         
 
@@ -50,8 +50,8 @@ class GA_init():
         for i in tqdm(range(self.num_paths_per_SDpair), desc="Generating Path Table", unit="Rows"):
             cur_inj_rate = self.injection_rates
             cur_time_run = 10000
-            # traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-            traffic_patterns = ["uniform", "bitcomp"]
+            traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+            # traffic_patterns = ["uniform", "bitcomp"]
             
             for traffic in traffic_patterns:
 
@@ -269,7 +269,7 @@ sample_period  = {cur_time};
 
 injection_rate = {inj_rate};
 
-watch_file = watchlists/watch_ga_2;
+watch_file = watchlists/watch_ga_1;
 watch_path_out = watchlists/temp_{traffic}_{route_algo};
 """
         # Ensure the config directory exists
@@ -281,7 +281,7 @@ watch_path_out = watchlists/temp_{traffic}_{route_algo};
 
 
 if __name__ == "__main__":
-    k = 4 # Nodes per dimension
+    k = 2 # Nodes per dimension
     n = 2 # Dimension of mesh
     b = 3 # Bits per gene, THis should not be changed - yet. 
 
