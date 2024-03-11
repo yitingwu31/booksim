@@ -471,6 +471,9 @@ TrafficManager::TrafficManager( const Configuration &config, const vector<Networ
     _overall_avg_frag.resize(_classes, 0.0);
     _overall_max_frag.resize(_classes, 0.0);
 
+    _src_stat.resize(_classes);
+    _fid_stat.resize(_classes);
+
     if(_pair_stats){
         _pair_plat.resize(_classes);
         _pair_nlat.resize(_classes);
@@ -544,6 +547,9 @@ TrafficManager::TrafficManager( const Configuration &config, const vector<Networ
             _pair_nlat[c].resize(_nodes*_nodes);
             _pair_flat[c].resize(_nodes*_nodes);
         }
+
+        _src_stat[c].resize(_nodes);
+        _fid_stat[c].resize(_nodes);
 
         _sent_packets[c].resize(_nodes, 0);
         _accepted_packets[c].resize(_nodes, 0);
@@ -791,6 +797,7 @@ void TrafficManager::_GeneratePacket( int source, int stype,
     Flit::FlitType packet_type = Flit::ANY_TYPE;
     int size = _GetNextPacketSize(cl); //input size 
     int pid = _cur_pid++;
+    
     assert(_cur_pid);
     int packet_destination = _traffic_pattern[cl]->dest(source);
     bool record = false;
@@ -857,6 +864,11 @@ void TrafficManager::_GeneratePacket( int source, int stype,
     for ( int i = 0; i < size; ++i ) {
         Flit * f  = Flit::New();
         f->id     = _cur_id++;
+        if (_src_stat[cl][source] == 0) {
+            _src_stat[cl][source] = source + 1;
+            _fid_stat[cl][source] = f->id;
+        }
+
         assert(_cur_id);
         f->pid    = pid;
         f->watch  = watch | (gWatchOut && (_flits_to_watch.count(f->id) > 0));
@@ -1328,6 +1340,9 @@ void TrafficManager::_ClearStats( )
 
         _frag_stats[c]->Clear( );
 
+        _src_stat[c].assign(_nodes, 0);
+        _fid_stat[c].assign(_nodes, 0);
+
         _sent_packets[c].assign(_nodes, 0);
         _accepted_packets[c].assign(_nodes, 0);
         _sent_flits[c].assign(_nodes, 0);
@@ -1454,7 +1469,7 @@ bool TrafficManager::_SingleSim( )
         //cout << _sim_state << endl;
 
         UpdateStats();
-        DisplayStats();
+        // DisplayStats();
     
         int lat_exc_class = -1;
         int lat_chg_exc_class = -1;
@@ -1796,6 +1811,7 @@ void TrafficManager::_UpdateOverallStats() {
     }
 }
 
+
 void TrafficManager::WriteStats(ostream & os) const {
   
     os << "%=================================" << endl;
@@ -1905,6 +1921,19 @@ void TrafficManager::WriteStats(ostream & os) const {
         }
         os << "];" << endl;
 #endif
+        // ------------------
+        os << "%=================================" << endl;
+
+        os << "_src_stat(" << c+1 << ",:) = [ ";
+        for ( int d = 0; d < _nodes; ++d ) {
+            os << (int)_src_stat[c][d] << " ";
+        }
+        os << "];" << endl
+           << "_fid_stat(" << c+1 << ",:) = [ ";
+        for ( int d = 0; d < _nodes; ++d ) {
+            os << (int)_fid_stat[c][d]  << " ";
+        }
+        os << "];" << endl;
     }
 }
 

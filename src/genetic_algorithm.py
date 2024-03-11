@@ -21,6 +21,7 @@ class GA_algo:
     self.n_iter = n_iter
     self.r_cross = r_cross
     self.r_mut = r_mut
+    self.packet_size = 2
 
     # ==================
     # initialize SD pair table
@@ -38,13 +39,13 @@ class GA_algo:
     ga_init = GA_init(k=self.k, n=self.n, b=self.n_bits)
     ga_init.fill()
     ga_init.display_table()
-    # ga_init.save_to_pickle(f'path_table_n{n}_k{k}.pkl')
+    ga_init.save_to_pickle(f'path_table_n{n}_k{k}.pkl')
 
     return ga_init._table
 
-  # def load_from_pickle(self, filepath):
-  #   with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
-  #       return pickle.load(file)
+  def load_from_pickle(self, filepath):
+    with open(filepath, 'rb') as file:  # Note 'rb' for reading bytes
+        return pickle.load(file)
 
   def generate_chrom(self, n_genes, n_bits):
       # we generate a chromosome as a list of random bitstrings
@@ -141,8 +142,7 @@ class GA_algo:
       internal_speedup  = 1.0;
 
       traffic = {traffic};
-      neighbor_step = {step};
-      packet_size = 1;
+      packet_size = {self.packet_size};
 
       sim_type = latency;
 
@@ -150,8 +150,6 @@ class GA_algo:
 
       injection_rate = {inj_rate};
 
-      watch_file = watchlists/watch_ga_1;
-      watch_path_out = stats_out/out;
       GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later
       """
       os.makedirs('config', exist_ok=True)
@@ -160,23 +158,24 @@ class GA_algo:
           config_file.write(config_content.strip())
 
   def score(self, candidate):
-    'calculate its average latency of this path'
+    # calculate its average latency of this path
+    # ================
     paths = self.decode_chromosome_to_paths(candidate)
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
     self.generate_config_file(filename="ga_test_temp", traffic="uniform", step=1, route_algo="ga", inj_rate=0.1)
-    with open(f'log/ga_test_temp.log', 'w') as log_file:  #TODO: .log or .txt
-      subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
+    # with open(f'log/ga_test_temp.log', 'w') as log_file:  #TODO: .log or .txt
+    #   subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
     subprocess.run(["./booksim", "config/ga_test_temp"])
     LogData = Booksim_log('log/ga_test_temp.log')
     flit_latency = LogData.get_average_latency("Flit")
-    print("Flit average latency: ", flit_latency, "\n")
-    
+    # print("\n =========== Flit average latency: ", flit_latency, "\n")
     return flit_latency
 
   def mutation(self, chromosome):  
-    'choose one random gene -> mutate a bit in its index'
+    # choose one random gene -> mutate a bit in its index
+    # ================
     if rand() < self.r_mut:
       chromosome_list = list(chromosome)
       # Choose a random index to mutate
@@ -188,7 +187,8 @@ class GA_algo:
     return chromosome
 
   def crossover(self, p1, p2):
-    '# crossover 2 parents to create 2 children (new indices)'
+    # crossover 2 parents to create 2 children (new indices)
+    # ================
     c1, c2 = p1, p2
     if rand() < self.r_cross:
       pt = randint(self.n_genes)
@@ -197,7 +197,8 @@ class GA_algo:
     return c1, c2
   
   def selection(self, pop, scores, k=3):
-    'tournament selection'
+    # tournament selection
+    # ================
     # first random selection
     selection_ix = randint(len(pop))
     for ix in randint(0, len(pop), k-1):
@@ -212,21 +213,28 @@ class GA_algo:
     num_generations_without_improvement = 0
     convergence_threshold = 4
     prev_best_score = float('inf')
+    print("\n-----------------------------------------\n")
+    print("Starting running GA iterations")
     for gen in range(self.n_iter):
       scores = [self.score(candidate) for candidate in self.chromosomes]
+      print(f"\n{gen} iter scores:")
+      print(scores)
       
       # checking exit
       for idx, score in enumerate(scores):
         if best_score is None or score < best_score:
             best_score = score
             best_chrom = self.chromosomes[idx]
-      # exit on convergence
-      if prev_best_score is not None:
-        if best_score >= prev_best_score and gen > n_iter/2:
-          num_generations_without_improvement += 1
-      else:
-          num_generations_without_improvement = 0
-      prev_best_score = best_score
+        # exit on convergence
+        if prev_best_score is not None:
+          if best_score >= prev_best_score and gen > n_iter/2:
+            num_generations_without_improvement += 1
+        else:
+            num_generations_without_improvement = 0
+        prev_best_score = best_score
+      print(f"best score is {best_score}")
+      print(f"best chrom is {best_chrom}")
+      print(f"\n==============================")
 
       if num_generations_without_improvement >= convergence_threshold:
         print("Convergence reached. Exiting loop.")
@@ -253,7 +261,7 @@ if __name__ == "__main__":
   k = 2
   n = 2
   n_iter = 1 # num generations
-  n_chrom = 8  #population size
+  n_chrom = 4  #population size
   n_bits = 3
   r_cross = 0.5 #crossover rate
   r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)

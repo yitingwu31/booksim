@@ -159,6 +159,9 @@ protected:
   vector<double> _overall_avg_frag;
   vector<double> _overall_max_frag;
 
+  vector<vector<int> > _src_stat;
+  vector<vector<int> > _fid_stat; 
+
   vector<vector<Stats *> > _pair_plat;
   vector<vector<Stats *> > _pair_nlat;
   vector<vector<Stats *> > _pair_flat;

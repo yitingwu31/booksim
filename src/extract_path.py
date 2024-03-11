@@ -75,18 +75,47 @@ class Booksim_log:
     latency = float(line[idx1+1:idx2])
     return latency
 
+'''
+Helper code to extract flit latency and check saturation
+'''
+class Booksim_stats_out:
+  def __init__(self, filename): 
+    self.filename = filename
+    self.fid = self.extract_fid(filename)
+  
+  def extract_fid(self, filename):
+    lines = [line.rstrip() for line in open(filename, 'r')]
+    _src_stat = lines[-2]
+    _src_stat = _src_stat.split(" = [")[-1]
+    _src_stat = _src_stat.split(" ];")[0]
+    _src_stat = _src_stat.split()
+    _src_stat = [int(ele) for ele in _src_stat]
+    assert _src_stat.count(0) == 0
+    # print(_src_stat)
+    _fid_stat = lines[-1]
+    _fid_stat = _fid_stat.split(" = [")[-1]
+    _fid_stat = _fid_stat.split(" ];")[0]
+    _fid_stat = _fid_stat.split()
+    _fid_stat = [int(ele) for ele in _fid_stat]
+    # print(_fid_stat)
+    return _fid_stat
+
+
 
 if __name__ == "__main__":
-    stats_filename = "stats_out/out"
-    FlitPathTable = Flit_path_table(n=2, k=4, filename=stats_filename)
-    flit_path_map = FlitPathTable.flit_path_map
-    print("flit path map: ")
-    print(flit_path_map, "\n")
-    uni_paths = FlitPathTable.extract_unique_path()
-    print("find unique paths: ")
-    print(uni_paths, "\n")
+    # stats_filename = "stats_out/out"
+    # FlitPathTable = Flit_path_table(n=2, k=4, filename=stats_filename)
+    # flit_path_map = FlitPathTable.flit_path_map
+    # print("flit path map: ")
+    # print(flit_path_map, "\n")
+    # uni_paths = FlitPathTable.extract_unique_path()
+    # print("find unique paths: ")
+    # print(uni_paths, "\n")
 
-    log_filename = "log/fattree_bit_t1"
-    LogData = Booksim_log(log_filename)
-    flit_latency = LogData.get_average_latency("Flit")
-    print("Flit average latency: ", flit_latency, "\n")
+    # log_filename = "log/fattree_bit_t1"
+    # LogData = Booksim_log(log_filename)
+    # flit_latency = LogData.get_average_latency("Flit")
+    # print("Flit average latency: ", flit_latency, "\n")
+
+    stats_out_name = "stats_out/temp_custom_neighbor_dor"
+    stats_out = Booksim_stats_out(stats_out_name)

@@ -1,37 +1,35 @@
 topology = mesh;
-k = 4;
-n = 2;
+      k = 2;
+      n = 2;
 
-routing_function = xy_yx;
+      routing_function = ga;
 
-// Flow control
-num_vcs     = 8;
-vc_buf_size = 8;
-wait_for_tail_credit = 1;
+      // Flow control
+      num_vcs     = 8;
+      vc_buf_size = 8;
+      wait_for_tail_credit = 1;
 
-// Router architecture
-vc_allocator = islip;
-sw_allocator = islip;
-alloc_iters  = 1;
+      // Router architecture
+      vc_allocator = islip;
+      sw_allocator = islip;
+      alloc_iters  = 1;
 
-credit_delay   = 2;
-routing_delay  = 0;
-vc_alloc_delay = 1;
-sw_alloc_delay = 1;
+      credit_delay   = 2;
+      routing_delay  = 0;
+      vc_alloc_delay = 1;
+      sw_alloc_delay = 1;
 
-input_speedup     = 2;
-output_speedup    = 1;
-internal_speedup  = 1.0;
+      input_speedup     = 2;
+      output_speedup    = 1;
+      internal_speedup  = 1.0;
 
-traffic = bitcomp;
-neighbor_step = 1;
-packet_size = 1;
+      traffic = uniform;
+      packet_size = 2;
 
-sim_type = latency;
+      sim_type = latency;
 
-sample_period  = 14000;  
+      sample_period  = 1000;  
 
-injection_rate = 0.22;
+      injection_rate = 0.1;
 
-watch_file = watchlists/watch_ga_2;
-watch_path_out = watchlists/temp_bitcomp_xy_yx;
+      GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later
