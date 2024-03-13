@@ -1199,7 +1199,7 @@ void TrafficManager::_Step( )
                             const Router * router = inject->GetSink();
                             assert(router);
                             int in_channel = inject->GetSinkPort();
-                            cout << "------- " << in_channel << endl;
+                            // cout << "------- " << in_channel << endl;
                             _rf(router, f, in_channel, &f->la_route_set, false);
                             if(f->watch) {
                                 *gWatchOut << GetSimTime() << " | "
