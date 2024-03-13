@@ -9,7 +9,7 @@ from extract_path import Booksim_log
 from init_test import *
 
 class GA_algo:
-  def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut):
+  def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo):
     # ==================
     # setup param
     # ==================
@@ -23,12 +23,13 @@ class GA_algo:
     self.r_cross = r_cross
     self.r_mut = r_mut
     self.packet_size = 5
+    self.selection_algo = selection_algo
 
     # ==================
     # initialize SD pair table
     # ==================
-    self.ga_table = self.init_table()
-    # self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
+    # self.ga_table = self.init_table()
+    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -102,7 +103,7 @@ class GA_algo:
       while x < xf:
           x += 1
           sequence.append((x, y))
-      # ove in +y direction
+      # Move in +y direction
       while y < yf:
           y += 1
           sequence.append((x, y))
@@ -158,17 +159,16 @@ class GA_algo:
       with open(os.path.join('config', filename), 'w') as config_file:
           config_file.write(config_content.strip())
 
-  def score(self, candidate):
+  def score(self, candidate, traffic):
     # calculate its average latency of this path
     # ================
     paths = self.decode_chromosome_to_paths(candidate)
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
-    traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-    traffic = random.choice(traffic_patterns)
-    # traffic = "uniform"
-    self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=0.01)
+    
+    inj_rate = 0.05
+    self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=inj_rate)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
 
@@ -200,16 +200,40 @@ class GA_algo:
       c2 = p2[:pt] + p1[pt:]
     return c1, c2
   
-  def selection(self, pop, scores, k=3):
-    # tournament selection
-    # ================
-    # first random selection
-    selection_ix = randint(len(pop))
-    for ix in randint(0, len(pop), k-1):
-      # check if better (e.g. perform a tournament)
-      if scores[ix] < scores[selection_ix]:
-        selection_ix = ix
-    return pop[selection_ix]
+  def selection_tournament(self, chromosomes, latencies, k=2):
+    selection = []
+    for i in (chromosomes):
+        selection_ix = randint(0, len(chromosomes)-1)
+        rand_selection = [randint(0, len(chromosomes)-1) for _ in range(k)]
+        for rand_idx in rand_selection:
+            # check if better (e.g. perform a tournament)
+            if latencies[rand_idx] < latencies[selection_ix]:
+                selection_ix = rand_idx
+        selection.append(chromosomes[selection_ix])
+    return selection
+  
+  def selection_roulette(self, chromosomes, latencies, scaling_factor=7.0):
+    # Roulette selection: select proportionality based on 
+    fitnesses = [1 / latency for latency in latencies]
+    total_fitness = sum(fitnesses)
+    probabilities = [f / total_fitness for f in fitnesses]
+    # Apply scaling factor to probabilities
+    scaled_probabilities = [p ** scaling_factor for p in probabilities]
+    total_scaled_fitness = sum(scaled_probabilities)
+    scaled_probabilities = [p / total_scaled_fitness for p in scaled_probabilities]
+    cumulative_probabilities = [sum(scaled_probabilities[:i+1]) for i in range(len(scaled_probabilities))]
+    print(f"probabilies scaled: ")
+    for p in scaled_probabilities:
+       print(f"{p:.3f}")
+    selections = []
+    for candidate in chromosomes:
+        selected_ix = 0
+        chance = rand()
+        while cumulative_probabilities[selected_ix] <= chance:
+            selected_ix += 1
+        selections.append(chromosomes[selected_ix])
+    # print(f"selections' scores: {[self.score(selection) for selection in selections]}")
+    return selections
 
   def run_GA(self):
     best_chrom_over_history = None
@@ -220,9 +244,17 @@ class GA_algo:
     print("\n-----------------------------------------\n")
     print("Starting running GA iterations")
     for gen in range(self.n_iter):
-      scores = [self.score(candidate) for candidate in self.chromosomes]
-      print(f"\n{gen} iter scores:")
-      print(scores)
+
+      # traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
+      # if np.log2(self.N) % 2 != 0:
+      #   traffic_patterns.remove("transpose")
+      # traffic = random.choice(traffic_patterns)
+      traffic = "bitcomp"
+      print(f"Trained on traffic={traffic} ")
+
+      scores = [self.score(candidate, traffic) for candidate in self.chromosomes]
+      #print(f"\n{gen} iter scores:")
+      #print(scores)
       
       best_chrom = None
       best_score = None
@@ -248,7 +280,13 @@ class GA_algo:
       #   break
       
       # select parents
-      selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
+      if selection_algo == 'r':
+        selected = self.selection_roulette(self.chromosomes, scores)
+      else:
+         selected = self.selection_tournament(self.chromosomes, scores)
+      scores = [self.score(candidate, traffic) for candidate in selected]
+      #print(f"selected scores: \n{scores}")
+      print(f"avg score: \n{np.sum(scores)/len(scores)}")
 
       # create next generation
       new_chromosomes = []
@@ -269,6 +307,11 @@ class GA_algo:
       if best_score < best_score_over_history:
         best_chrom_over_history = best_chrom
         best_score_over_history = best_score
+        print(f"new best score!: {best_score_over_history}")
+      
+      if best_chrom is not None:
+        best_paths = self.decode_chromosome_to_paths(best_chrom)
+        self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
       
     return best_score_over_history, best_chrom_over_history
 
@@ -276,32 +319,27 @@ if __name__ == "__main__":
   # define range for input
   k = 2
   n = 3
-  n_iter = 4 # num generations
+  n_iter = 10 # num generations
   n_bits = 3
-  # n_chrom = 4
   n_chrom = 2**n_bits  #population size
-  r_cross = 0.5 #crossover rate
-  r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
+  r_cross = 0.2 #crossover rate
+  r_mut = 2.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
+  selection_algo = 't' # 'r': roulette or 't': tournament 
 
-  ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
-  # print(ga1.ga_table)
+  ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo)
 
-  # print(len(ga1.chromosomes))
-  # print(len(ga1.sd_pair_mapping))
-
-  example_chromosome = ga1.chromosomes[0]
-  
+  # example_chromosome = ga1.chromosomes[0]
   # Decode the chromosome to paths using the ga_table
-  decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
+  # decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
   # print(decoded_paths)
-
-  # Save the decoded paths to a JSON file
-  # ga1.save_paths_to_json(decoded_paths, 'decoded_paths.json')
-  ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
+  # Save the decoded paths to a txt file
+  # ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
 
   best_score, best_chrom = ga1.run_GA()
 
-  print("Overal best score: ", best_score, "\n")
-
-  best_paths = ga1.decode_chromosome_to_paths(best_chrom)
-  ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')
+  if best_chrom is not None:
+    print(f"best all-time score is {best_score}")
+    print(f"best all-time chrom is {best_chrom}")
+    print(f"\n==============================")
+    best_paths = ga1.decode_chromosome_to_paths(best_chrom)
+    ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')

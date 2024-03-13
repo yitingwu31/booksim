@@ -221,6 +221,7 @@ TrafficManager::TrafficManager( const Configuration &config, const vector<Networ
         _class_priority.push_back(config.GetInt("class_priority"));
     }
     _class_priority.resize(_classes, _class_priority.back());
+    // cout << _class_priority << endl;
 
     vector<string> injection_process = config.GetStrArray("injection_process");
     injection_process.resize(_classes, injection_process.back());
@@ -868,7 +869,6 @@ void TrafficManager::_GeneratePacket( int source, int stype,
     for ( int i = 0; i < size; ++i ) {
         Flit * f  = Flit::New();
         f->id     = _cur_id++;
-        
 
         assert(_cur_id);
         f->pid    = pid;
@@ -1101,10 +1101,13 @@ void TrafficManager::_Step( )
                         assert(router);
                         int in_channel = inject->GetSinkPort();
 
+                        // cout << "------- " << in_channel << endl;
+
                         // NOTE: Because the lookahead is not for injection, but for the 
                         // first hop, we have to temporarily set cf's VC to be non-negative 
                         // in order to avoid seting of an assertion in the routing function.
                         cf->vc = vc_start;
+                        // cout << "------- " << in_channel << endl;
                         _rf(router, cf, in_channel, &cf->la_route_set, false);
                         cf->vc = -1;
 
@@ -1137,6 +1140,9 @@ void TrafficManager::_Step( )
                             (vc_start + (lvc - vc_start + i) % vc_count);
                         assert((vc >= vc_start) && (vc <= vc_end));
                         if(!dest_buf->IsAvailableFor(vc)) {
+                            // cout << FullName() << " | "
+                            //                << "  Output VC " << vc << " is busy." << endl;
+                            // cout << cf->cl << endl;
                             if(cf->watch) {
                                 *gWatchOut << GetSimTime() << " | " << FullName() << " | "
                                            << "  Output VC " << vc << " is busy." << endl;
@@ -1193,6 +1199,7 @@ void TrafficManager::_Step( )
                             const Router * router = inject->GetSink();
                             assert(router);
                             int in_channel = inject->GetSinkPort();
+                            cout << "------- " << in_channel << endl;
                             _rf(router, f, in_channel, &f->la_route_set, false);
                             if(f->watch) {
                                 *gWatchOut << GetSimTime() << " | "

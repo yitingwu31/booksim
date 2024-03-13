@@ -182,6 +182,8 @@ int main( int argc, char **argv )
     gaTable = new GATable( path_json_file );
   }
 
+  cout << "Finish loading decoded path!" << endl;
+
   // std::cout << "GA Table successfully initialized!" << std::endl;
   
   string watch_out_file = config.GetStr( "watch_out" );
