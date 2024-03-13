@@ -9,7 +9,7 @@ from extract_path import Booksim_log
 from init_test import *
 
 class GA_algo:
-  def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut):
+  def __init__(self, k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo):
     # ==================
     # setup param
     # ==================
@@ -23,6 +23,7 @@ class GA_algo:
     self.r_cross = r_cross
     self.r_mut = r_mut
     self.packet_size = 5
+    self.selection_algo = selection_algo
 
     # ==================
     # initialize SD pair table
@@ -199,16 +200,40 @@ class GA_algo:
       c2 = p2[:pt] + p1[pt:]
     return c1, c2
   
-  def selection(self, pop, scores, k=3):
-    # tournament selection
-    # ================
-    # first random selection
-    selection_ix = randint(len(pop))
-    for ix in randint(0, len(pop), k-1):
-      # check if better (e.g. perform a tournament)
-      if scores[ix] < scores[selection_ix]:
-        selection_ix = ix
-    return pop[selection_ix]
+  def selection_tournament(self, chromosomes, latencies, k=2):
+    selection = []
+    for i in (chromosomes):
+        selection_ix = randint(0, len(chromosomes)-1)
+        rand_selection = [randint(0, len(chromosomes)-1) for _ in range(k)]
+        for rand_idx in rand_selection:
+            # check if better (e.g. perform a tournament)
+            if latencies[rand_idx] < latencies[selection_ix]:
+                selection_ix = rand_idx
+        selection.append(chromosomes[selection_ix])
+    return selection
+  
+  def selection_roulette(self, chromosomes, latencies, scaling_factor=7.0):
+    # Roulette selection: select proportionality based on 
+    fitnesses = [1 / latency for latency in latencies]
+    total_fitness = sum(fitnesses)
+    probabilities = [f / total_fitness for f in fitnesses]
+    # Apply scaling factor to probabilities
+    scaled_probabilities = [p ** scaling_factor for p in probabilities]
+    total_scaled_fitness = sum(scaled_probabilities)
+    scaled_probabilities = [p / total_scaled_fitness for p in scaled_probabilities]
+    cumulative_probabilities = [sum(scaled_probabilities[:i+1]) for i in range(len(scaled_probabilities))]
+    print(f"probabilies scaled: ")
+    for p in scaled_probabilities:
+       print(f"{p:.3f}")
+    selections = []
+    for candidate in chromosomes:
+        selected_ix = 0
+        chance = rand()
+        while cumulative_probabilities[selected_ix] <= chance:
+            selected_ix += 1
+        selections.append(chromosomes[selected_ix])
+    # print(f"selections' scores: {[self.score(selection) for selection in selections]}")
+    return selections
 
   def run_GA(self):
     best_chrom_over_history = None
@@ -228,8 +253,8 @@ class GA_algo:
       print(f"Trained on traffic={traffic} ")
 
       scores = [self.score(candidate, traffic) for candidate in self.chromosomes]
-      print(f"\n{gen} iter scores:")
-      print(scores)
+      #print(f"\n{gen} iter scores:")
+      #print(scores)
       
       best_chrom = None
       best_score = None
@@ -255,7 +280,13 @@ class GA_algo:
       #   break
       
       # select parents
-      selected = [self.selection(self.chromosomes, scores) for _ in range(n_chrom)]
+      if selection_algo == 'r':
+        selected = self.selection_roulette(self.chromosomes, scores)
+      else:
+         selected = self.selection_tournament(self.chromosomes, scores)
+      scores = [self.score(candidate, traffic) for candidate in selected]
+      #print(f"selected scores: \n{scores}")
+      print(f"avg score: \n{np.sum(scores)/len(scores)}")
 
       # create next generation
       new_chromosomes = []
@@ -276,6 +307,7 @@ class GA_algo:
       if best_score < best_score_over_history:
         best_chrom_over_history = best_chrom
         best_score_over_history = best_score
+        print(f"new best score!: {best_score_over_history}")
       
       if best_chrom is not None:
         best_paths = self.decode_chromosome_to_paths(best_chrom)
@@ -287,13 +319,14 @@ if __name__ == "__main__":
   # define range for input
   k = 2
   n = 3
-  n_iter = 7 # num generations
+  n_iter = 10 # num generations
   n_bits = 3
   n_chrom = 2**n_bits  #population size
-  r_cross = 0.5 #crossover rate
-  r_mut = 1.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
+  r_cross = 0.2 #crossover rate
+  r_mut = 2.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
+  selection_algo = 't' # 'r': roulette or 't': tournament 
 
-  ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut)
+  ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo)
 
   # example_chromosome = ga1.chromosomes[0]
   # Decode the chromosome to paths using the ga_table
@@ -305,5 +338,8 @@ if __name__ == "__main__":
   best_score, best_chrom = ga1.run_GA()
 
   if best_chrom is not None:
+    print(f"best all-time score is {best_score}")
+    print(f"best all-time chrom is {best_chrom}")
+    print(f"\n==============================")
     best_paths = ga1.decode_chromosome_to_paths(best_chrom)
     ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')
