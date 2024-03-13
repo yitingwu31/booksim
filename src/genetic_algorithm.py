@@ -166,7 +166,7 @@ class GA_algo:
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
     
-    inj_rate = 0.01
+    inj_rate = 0.05
     self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=inj_rate)
     with open(f'log/ga_test_temp.log', 'w') as log_file:  
       subprocess.run(["./booksim", "config/ga_test_temp"], stdout=log_file, stderr=log_file)
@@ -286,7 +286,7 @@ class GA_algo:
 if __name__ == "__main__":
   # define range for input
   k = 2
-  n = 2
+  n = 3
   n_iter = 7 # num generations
   n_bits = 3
   n_chrom = 2**n_bits  #population size

@@ -1,6 +1,6 @@
 topology = mesh;
       k = 2;
-      n = 2;
+      n = 3;
 
       routing_function = ga;
 
@@ -30,6 +30,6 @@ topology = mesh;
 
       sample_period  = 1000;  
 
-      injection_rate = 0.01;
+      injection_rate = 0.1;
 
       GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later

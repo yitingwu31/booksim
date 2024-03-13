@@ -481,11 +481,11 @@ void adaptive_xy_yx_mesh( const Router *r, const Flit *f,
       int credit_xy = r->GetUsedCredit(out_port_xy);
       int credit_yx = r->GetUsedCredit(out_port_yx);
       if(credit_xy > credit_yx) {
-	x_then_y = false;
+	      x_then_y = false;
       } else if(credit_xy < credit_yx) {
-	x_then_y = true;
+	      x_then_y = true;
       } else {
-	x_then_y = (RandomInt(1) > 0);
+	      x_then_y = (RandomInt(1) > 0);
       }
     }
     
@@ -603,20 +603,6 @@ int ga_next_mesh(int cur, int src, int dest) {
 
 void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs, bool inject )
 {
-
-  int out_port;
-
-  if (inject) {
-    out_port = -1;
-  } else {
-    // cout << "================" << endl;
-    // cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
-    // cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
-    // cout << "flit src = " << f->src << " dest = " << f->dest << endl;
-    out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
-    // cout << "out port is " << out_port << endl;
-  }
-
   int vcBegin = 0, vcEnd = gNumVCs-1;
   if ( f->type == Flit::READ_REQUEST ) {
     vcBegin = gReadReqBeginVC;
@@ -632,24 +618,62 @@ void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs
     vcEnd = gWriteReplyEndVC;
   }
   assert(((f->vc >= vcBegin) && (f->vc <= vcEnd)) || (inject && (f->vc < 0)));
+  // cout << "VC begin is " << vcBegin << " VC end is " << vcEnd << endl;
+  outputs->Clear( );
 
-  if ( !inject && f->watch ) {
-    *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
-	       << "Adding VC range [" 
-	       << vcBegin << "," 
-	       << vcEnd << "]"
-	       << " at output port " << out_port
-	       << " for flit " << f->id
-	       << " (input port " << in_channel
-	       << ", destination " << f->dest << ")"
-	       << "." << endl;
+  int ga_out_port;
+  if (inject) {
+    outputs->AddRange(-1, vcBegin, vcEnd);
+    return;
+  } else if (r->GetID() == f->dest) {
+    outputs->AddRange(2*gN, vcBegin, vcEnd);
+    return;
+  } else {
+    // cout << "================" << endl;
+    // cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
+    // cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
+    // cout << "flit src = " << f->src << " dest = " << f->dest << endl;
+    ga_out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
+    // cout << "out port is " << ga_out_port << endl;
   }
-
+  // cout << "GA out port is " << ga_out_port << endl;
   
-  
-  outputs->Clear();
 
-  outputs->AddRange( out_port, vcBegin, vcEnd );
+  int dor_out_port = dor_next_mesh( r->GetID( ), f->dest);   
+  // cout << "DOR out port is " << dor_out_port << endl;
+  outputs->AddRange( dor_out_port, vcBegin, vcBegin, 0);
+  // cout << "add escape route VC " << vcBegin << endl;
+
+  int in_vc;
+  // cout << "In channel is " << in_channel << endl;
+  if ( in_channel == 2*gN ) {
+    in_vc = vcEnd; // ignore the injection VC
+  } else {
+    in_vc = f->vc;
+  }
+  // cout << "in_vc is " << in_vc << endl;
+
+  if ( in_vc != vcBegin ) { // If not in the escape VC
+    // GA for all other channels
+    outputs->AddRange( ga_out_port, vcBegin+1, vcEnd, 1);
+    // cout << "add GA route VC " << vcBegin+1 << endl;
+
+    if ( f->watch ) {
+      *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+          << "Adding VC range [" 
+          << vcBegin << "," 
+          << vcEnd << "]"
+          << " at output port " << ga_out_port
+          << " with priority " << 1
+          << " for flit " << f->id
+          << " (input port " << in_channel
+          << ", destination " << f->dest << ")"
+          << "." << endl;
+    }
+  } else {
+    cout << "Use escape VC!" << endl;
+  }
+  // cout << "================" << endl;
 }
 
 
@@ -1108,36 +1132,36 @@ void min_adapt_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *
     
     for ( int n = 0; n < gN; ++n ) {
       if ( ( cur % gK ) != ( dest % gK ) ) { 
-	// Add minimal direction in dimension 'n'
-	if ( ( cur % gK ) < ( dest % gK ) ) { // Right
-	  if ( f->watch ) {
-	    *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
-			<< "Adding VC range [" 
-		       << (vcBegin+1) << "," 
-			<< vcEnd << "]"
-			<< " at output port " << 2*n
-			<< " with priority " << 1
-			<< " for flit " << f->id
-			<< " (input port " << in_channel
-			<< ", destination " << f->dest << ")"
-			<< "." << endl;
-	  }
-	  outputs->AddRange( 2*n, vcBegin+1, vcEnd, 1 ); 
-	} else { // Left
-	  if ( f->watch ) {
-	    *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
-			<< "Adding VC range [" 
-		       << (vcBegin+1) << "," 
-			<< vcEnd << "]"
-			<< " at output port " << 2*n+1
-			<< " with priority " << 1
-			<< " for flit " << f->id
-			<< " (input port " << in_channel
-			<< ", destination " << f->dest << ")"
-			<< "." << endl;
-	  }
-	  outputs->AddRange( 2*n + 1, vcBegin+1, vcEnd, 1 ); 
-	}
+        // Add minimal direction in dimension 'n'
+        if ( ( cur % gK ) < ( dest % gK ) ) { // Right
+          if ( f->watch ) {
+            *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+            << "Adding VC range [" 
+                << (vcBegin+1) << "," 
+            << vcEnd << "]"
+            << " at output port " << 2*n
+            << " with priority " << 1
+            << " for flit " << f->id
+            << " (input port " << in_channel
+            << ", destination " << f->dest << ")"
+            << "." << endl;
+          }
+          outputs->AddRange( 2*n, vcBegin+1, vcEnd, 1 ); 
+        } else { // Left
+          if ( f->watch ) {
+            *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+            << "Adding VC range [" 
+                << (vcBegin+1) << "," 
+            << vcEnd << "]"
+            << " at output port " << 2*n+1
+            << " with priority " << 1
+            << " for flit " << f->id
+            << " (input port " << in_channel
+            << ", destination " << f->dest << ")"
+            << "." << endl;
+          }
+          outputs->AddRange( 2*n + 1, vcBegin+1, vcEnd, 1 ); 
+        }
       }
       cur  /= gK;
       dest /= gK;
