@@ -25,10 +25,8 @@ class GA_init():
 
         # _table should contain at most 2**b paths for each SD pair
         self.num_paths_per_SDpair = 2**b
-        # self.num_paths_per_SDpair = 4
         self._table = [None] * (self.N * (self.N-1))
         
-
         # total N * (N-1) SD pair
         # SD_table contains only one path for each SD pair
         self.SD_table = [None] * (self.N * (self.N-1))
@@ -45,7 +43,6 @@ class GA_init():
         # ============================
 
         for i in tqdm(range(len(algos_available)), desc="Generating Path Table", unit="Rows"):
-            # cur_inj_rate = self.injection_rates
             cur_time_run = 10000
             traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev", "bad_dragon", "tornado", "neighbor"]
             if np.log2(self.N) % 2 != 0:
@@ -60,7 +57,6 @@ class GA_init():
                     # ============================
                     # run booksim simulation
                     # ============================
-                    
                     print(f"............. run booksim with route_algo={route_algo}, traffic={traffic} .............")
                     
                     self.generate_watch_list('watchlists/watch_temp')
@@ -87,13 +83,6 @@ class GA_init():
                     for tt in range(len(self._table)):
                         print(len(self._table[tt]), end="   ")
                     print("\n")
-                    
-                    # ============================
-                    # update config combination
-                    # ============================
-                    # if cur_inj_rate < 0.98:
-                    #     cur_inj_rate += 0.02
-                    # cur_time_run += 4000
 
         self.fill_table_row()
 

@@ -2,7 +2,6 @@ import numpy as np
 import random
 from numpy.random import randint, rand
 import pickle
-import json
 import os
 import subprocess
 from extract_path import Booksim_log
@@ -74,11 +73,6 @@ class GA_algo:
       else:
         index = src * (self.N - 1) + dst
       return index
-
-  # def save_paths_to_json(self, paths, filepath):
-  #     # Saving paths to JSON file
-  #     with open(filepath, 'w') as json_file:
-  #         json.dump(paths, json_file, indent=4)
   
   def save_paths_to_txt(self, paths, filepath):
      file = open(filepath, 'w')
@@ -162,7 +156,6 @@ class GA_algo:
   def score(self, candidate, traffic):
     # calculate its average latency of this path
     # ================
-    paths = self.decode_chromosome_to_paths(candidate)
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
     ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
@@ -223,36 +216,35 @@ class GA_algo:
     total_scaled_fitness = sum(scaled_probabilities)
     scaled_probabilities = [p / total_scaled_fitness for p in scaled_probabilities]
     cumulative_probabilities = [sum(scaled_probabilities[:i+1]) for i in range(len(scaled_probabilities))]
-    print("cum prob: ", cumulative_probabilities)
-    print(f"probabilies scaled: ")
-    for p in scaled_probabilities:
-       print(f"{p:.3f}")
+    # print("cum prob: ", cumulative_probabilities)
+    # print(f"probabilies scaled: ")
+    # for p in scaled_probabilities:
+    #    print(f"{p:.3f}")
+
+    # print("chromosomes: ", chromosomes[0])
     selections = []
     for candidate in chromosomes:
         selected_ix = 0
         chance = rand()
-        print("chance", chance)
+        # print("chance", chance)
         while cumulative_probabilities[selected_ix] <= chance:
             selected_ix += 1
         selections.append(chromosomes[selected_ix])
+    # print("selections: ", selections[0])
     # print(f"selections' scores: {[self.score(selection) for selection in selections]}")
     return selections
 
   def run_GA(self):
     best_chrom_over_history = None
     best_score_over_history = float('inf')
-    num_generations_without_improvement = 0
-    convergence_threshold = 4
+    # num_generations_without_improvement = 0
+    # convergence_threshold = 4
     # prev_best_score = float('inf')
     print("\n-----------------------------------------\n")
     print("Starting running GA iterations")
     for gen in range(self.n_iter):
 
-      # traffic_patterns = ["uniform", "bitcomp", "transpose", "randperm", "shuffle", "diagonal", "asymmetric", "bitrev"]
-      # if np.log2(self.N) % 2 != 0:
-      #   traffic_patterns.remove("transpose")
-      # traffic = random.choice(traffic_patterns)
-      traffic = "bitcomp"
+      traffic = "uniform"
       print(f"Trained on traffic={traffic} ")
 
       scores = [self.score(candidate, traffic) for candidate in self.chromosomes]
@@ -261,7 +253,6 @@ class GA_algo:
       
       best_chrom = None
       best_score = None
-      prev_best_score = float('inf')
       # checking exit
       for idx, score in enumerate(scores):
         if best_score is None or score < best_score:
@@ -273,9 +264,8 @@ class GA_algo:
         #     num_generations_without_improvement += 1
         # else:
         #     num_generations_without_improvement = 0
-        prev_best_score = best_score
       print(f"best score is {best_score}")
-      print(f"best chrom is {best_chrom}")
+      # print(f"best chrom is {best_chrom}")
       print(f"\n==============================")
 
       # if num_generations_without_improvement >= convergence_threshold:
@@ -286,10 +276,10 @@ class GA_algo:
       if selection_algo == 'r':
         selected = self.selection_roulette(self.chromosomes, scores)
       else:
-         selected = self.selection_tournament(self.chromosomes, scores)
-      scores = [self.score(candidate, traffic) for candidate in selected]
-      #print(f"selected scores: \n{scores}")
-      print(f"avg score: \n{np.sum(scores)/len(scores)}")
+        selected = self.selection_tournament(self.chromosomes, scores)
+
+      # random shuffle in place
+      # random.shuffle(selected)
 
       # create next generation
       new_chromosomes = []
@@ -307,6 +297,8 @@ class GA_algo:
         new_chromosomes.append(c2)
 
       self.chromosomes = new_chromosomes
+
+      # update best history score 
       if best_score < best_score_over_history:
         best_chrom_over_history = best_chrom
         best_score_over_history = best_score
@@ -320,7 +312,7 @@ class GA_algo:
 
 if __name__ == "__main__":
   # define range for input
-  k = 2
+  k = 3
   n = 3
   n_iter = 10 # num generations
   n_bits = 3
@@ -331,18 +323,11 @@ if __name__ == "__main__":
 
   ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo)
 
-  # example_chromosome = ga1.chromosomes[0]
-  # Decode the chromosome to paths using the ga_table
-  # decoded_paths = ga1.decode_chromosome_to_paths(example_chromosome)
-  # print(decoded_paths)
-  # Save the decoded paths to a txt file
-  # ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt')
-
   best_score, best_chrom = ga1.run_GA()
 
   if best_chrom is not None:
     print(f"best all-time score is {best_score}")
-    print(f"best all-time chrom is {best_chrom}")
+    # print(f"best all-time chrom is {best_chrom}")
     print(f"\n==============================")
     best_paths = ga1.decode_chromosome_to_paths(best_chrom)
     ga1.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}.txt')
