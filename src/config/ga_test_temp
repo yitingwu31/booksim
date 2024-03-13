@@ -30,6 +30,6 @@ topology = mesh;
 
       sample_period  = 1000;  
 
-      injection_rate = 0.1;
+      injection_rate = 0.05;
 
       GA_path_file = decoded_paths.txt; //currently hardcoded, maybe change later

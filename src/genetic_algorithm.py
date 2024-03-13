@@ -28,8 +28,8 @@ class GA_algo:
     # ==================
     # initialize SD pair table
     # ==================
-    # self.ga_table = self.init_table()
-    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
+    self.ga_table = self.init_table()
+    # self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -215,6 +215,7 @@ class GA_algo:
   def selection_roulette(self, chromosomes, latencies, scaling_factor=7.0):
     # Roulette selection: select proportionality based on 
     fitnesses = [1 / latency for latency in latencies]
+    print("fitnesses", fitnesses)
     total_fitness = sum(fitnesses)
     probabilities = [f / total_fitness for f in fitnesses]
     # Apply scaling factor to probabilities
@@ -222,6 +223,7 @@ class GA_algo:
     total_scaled_fitness = sum(scaled_probabilities)
     scaled_probabilities = [p / total_scaled_fitness for p in scaled_probabilities]
     cumulative_probabilities = [sum(scaled_probabilities[:i+1]) for i in range(len(scaled_probabilities))]
+    print("cum prob: ", cumulative_probabilities)
     print(f"probabilies scaled: ")
     for p in scaled_probabilities:
        print(f"{p:.3f}")
@@ -229,6 +231,7 @@ class GA_algo:
     for candidate in chromosomes:
         selected_ix = 0
         chance = rand()
+        print("chance", chance)
         while cumulative_probabilities[selected_ix] <= chance:
             selected_ix += 1
         selections.append(chromosomes[selected_ix])
@@ -324,7 +327,7 @@ if __name__ == "__main__":
   n_chrom = 2**n_bits  #population size
   r_cross = 0.2 #crossover rate
   r_mut = 2.0 / float(k**n * (k**n - 1)) # average rate of mutation (per chromosome)
-  selection_algo = 't' # 'r': roulette or 't': tournament 
+  selection_algo = 'r' # 'r': roulette or 't': tournament 
 
   ga1 = GA_algo(k, n, n_bits, n_chrom, n_iter, r_cross, r_mut, selection_algo)
 
