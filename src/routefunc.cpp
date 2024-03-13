@@ -652,59 +652,66 @@ void ga_mesh( const Router *r, const Flit *f, int in_channel, OutputSet *outputs
   outputs->AddRange( dor_out_port, vcBegin, vcBegin, 0);
   // cout << "add escape route VC " << vcBegin << endl;
 
-  if ( in_vc > vcBegin ) { // If not in the escape VC
+  if (f->id < 5000) {
+    if (in_vc == vcBegin) {
+      cout << f->id << " Use escape VC!" << endl;
+    } else if (in_vc <= vcBegin+4) {
+      cout << f->id << " Use Adpative VC!" << endl;
+    } else {
+      cout << f->id << " Use GA VC!" << endl;
+    }
+  }
+
+  if ( in_vc > vcBegin) { // If not in the escape VC
     // =================
     // 1-3: Adaptive
     // =================
-    int cur = r->GetID( );
-    int dest = f->dest;
-    for ( int n = 0; n < gN; ++n ) {
-      if ( ( cur % gK ) != ( dest % gK ) ) { 
-        // Add minimal direction in dimension 'n'
-        if ( ( cur % gK ) < ( dest % gK ) ) { // Right
-          outputs->AddRange( 2*n, vcBegin+1, vcBegin+3, 1 ); 
-        } else { // Left
-          outputs->AddRange( 2*n + 1, vcBegin+1, vcBegin+3, 1 ); 
+    if ( in_vc <= vcBegin + 3 ) {
+      int cur = r->GetID( );
+      int dest = f->dest;
+      for ( int n = 0; n < gN; ++n ) {
+        if ( ( cur % gK ) != ( dest % gK ) ) { 
+          // Add minimal direction in dimension 'n'
+          if ( ( cur % gK ) < ( dest % gK ) ) { // Right
+            outputs->AddRange( 2*n, vcBegin+1, vcBegin+3, 1 ); 
+          } else { // Left
+            outputs->AddRange( 2*n + 1, vcBegin+1, vcBegin+3, 1 ); 
+          }
         }
+        cur  /= gK;
+        dest /= gK;
       }
-      cur  /= gK;
-      dest /= gK;
-    }
-    if (in_vc <= vcBegin+3 && f->id < 100) {
-      cout << f->id << " Use Adpative VC!" << endl;
-    } else if (f->id == 100) {
-      cout << f->id << " Use GA VC!" << endl;
-    }
+      
+    } else {
   
-    // =================
-    // 4-7: GA
-    // =================
-    // cout << "================" << endl;
-    // cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
-    // cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
-    // cout << "flit src = " << f->src << " dest = " << f->dest << endl;
-    int ga_out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
-    // cout << "out port is " << ga_out_port << endl;
-    // GA for all other channels
-    outputs->AddRange( ga_out_port, vcBegin+4, vcEnd, 1);
+      // =================
+      // 4-7: GA
+      // =================
+      // cout << "================" << endl;
+      // cout << "router " << r->GetID() << " calling ga_mesh!" << endl;
+      // cout << "flit id = " << f->id  << ", pid = " << f->pid << endl;
+      // cout << "flit src = " << f->src << " dest = " << f->dest << endl;
+      int ga_out_port = ga_next_mesh(r->GetID(), f->src, f->dest);
+      // cout << "out port is " << ga_out_port << endl;
+      // GA for all other channels
+      outputs->AddRange( ga_out_port, vcBegin+4, vcEnd, 2);
     
 
-    if ( f->watch ) {
-      *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
-          << "Adding VC range [" 
-          << vcBegin << "," 
-          << vcEnd << "]"
-          << " at output port " << ga_out_port
-          << " for flit " << f->id
-          << " (input port " << in_channel
-          << ", destination " << f->dest << ")"
-          << "." << endl;
+      if ( f->watch ) {
+        *gWatchOut << GetSimTime() << " | " << r->FullName() << " | "
+            << "Adding VC range [" 
+            << vcBegin << "," 
+            << vcEnd << "]"
+            << " at output port " << ga_out_port
+            << " for flit " << f->id
+            << " (input port " << in_channel
+            << ", destination " << f->dest << ")"
+            << "." << endl;
+      }
     }
+    
   } 
-  // else if (f->id < 100) {
-  //   cout << f->id  << " Use escape VC!" << endl;
-  // }
-  // cout << "================" << endl;
+
 }
 
 
