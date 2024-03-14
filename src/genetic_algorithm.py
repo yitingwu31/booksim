@@ -27,8 +27,8 @@ class GA_algo:
     # ==================
     # initialize SD pair table
     # ==================
-    self.ga_table = self.init_table()
-    # self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
+    # self.ga_table = self.init_table()
+    self.ga_table = self.load_from_pickle(f"path_table_n{n}_k{k}.pkl")
 
     # ==================
     # initialize chromosomes
@@ -158,7 +158,7 @@ class GA_algo:
     # ================
     decoded_paths = self.decode_chromosome_to_paths(candidate)
     # Save the decoded paths to a txt file
-    ga1.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
+    self.save_paths_to_txt(decoded_paths, 'decoded_paths.txt') 
     
     inj_rate = 0.05
     self.generate_config_file(filename="ga_test_temp", traffic=traffic, route_algo="ga", inj_rate=inj_rate)
@@ -232,6 +232,9 @@ class GA_algo:
         selections.append(chromosomes[selected_ix])
     # print("selections: ", selections[0])
     # print(f"selections' scores: {[self.score(selection) for selection in selections]}")
+    lowest_latency_index = latencies.index(min(latencies))
+    # Override one of the selections with the chromosome having the lowest latency
+    selections[random.randint(0, len(selections) - 1)] = chromosomes[lowest_latency_index]
     return selections
 
   def run_GA(self):
@@ -273,7 +276,7 @@ class GA_algo:
       #   break
       
       # select parents
-      if selection_algo == 'r':
+      if self.selection_algo == 'r':
         selected = self.selection_roulette(self.chromosomes, scores)
       else:
         selected = self.selection_tournament(self.chromosomes, scores)
@@ -284,7 +287,7 @@ class GA_algo:
       # create next generation
       new_chromosomes = []
       # crossover and mutation
-      for i in range(0, n_chrom, 2):
+      for i in range(0, self.n_chrom, 2):
         # get selected parents in pairs
         p1, p2 = selected[i], selected[i+1]
         c1, c2 = self.crossover(p1, p2)
@@ -306,15 +309,16 @@ class GA_algo:
       
       if best_chrom is not None and gen % 10 == 0:
         best_paths = self.decode_chromosome_to_paths(best_chrom)
-        self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
+        self.save_paths_to_txt(best_paths, f'ga_paths_n{self.n}_k{self.k}_iter{gen}.txt')
       
     return best_score_over_history, best_chrom_over_history
 
 if __name__ == "__main__":
   # define range for input
-  k = 4
-  n = 3
+  k = 3
+  n = 2
   n_iter = 100 # num generations
+
   n_bits = 3
   n_chrom = 2**n_bits  #population size
   r_cross = 0.2 #crossover rate
