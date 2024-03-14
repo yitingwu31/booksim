@@ -79,35 +79,35 @@ class GA_algo:
      for path in paths:
         file.write(str(path)+"\n")
 
-  def generate_dor_path2d(self): #generate DOR random paths (no deadlock)  list of (x,y) from start to end.
-      # a gene is a column in the GA table
-      # This gene has {2^(n_bits)-1} possible rows .
-      sequence = []
-      xi = randint(0, self.k)
-      yi = randint(0, self.k)
-      xf = xi
-      yf = yi
-      while (xi, yi) == (xf, yf):
-        xf = np.random.choice(0, self.k-1)
-        yf = np.random.choice(0, self.k-1)
-      x = xi
-      y = yi
-      sequence.append((x, y))
-      # Move in +x direction
-      while x < xf:
-          x += 1
-          sequence.append((x, y))
-      # Move in +y direction
-      while y < yf:
-          y += 1
-          sequence.append((x, y))
-      while x > xf:
-          x -= 1
-          sequence.append((x, y))
-      while y > yf:
-          y -= 1
-          sequence.append((x, y))
-      return sequence
+  # def generate_dor_path2d(self): #generate DOR random paths (no deadlock)  list of (x,y) from start to end.
+  #     # a gene is a column in the GA table
+  #     # This gene has {2^(n_bits)-1} possible rows .
+  #     sequence = []
+  #     xi = randint(0, self.k)
+  #     yi = randint(0, self.k)
+  #     xf = xi
+  #     yf = yi
+  #     while (xi, yi) == (xf, yf):
+  #       xf = np.random.choice(0, self.k-1)
+  #       yf = np.random.choice(0, self.k-1)
+  #     x = xi
+  #     y = yi
+  #     sequence.append((x, y))
+  #     # Move in +x direction
+  #     while x < xf:
+  #         x += 1
+  #         sequence.append((x, y))
+  #     # Move in +y direction
+  #     while y < yf:
+  #         y += 1
+  #         sequence.append((x, y))
+  #     while x > xf:
+  #         x -= 1
+  #         sequence.append((x, y))
+  #     while y > yf:
+  #         y -= 1
+  #         sequence.append((x, y))
+  #     return sequence
   
   def generate_config_file(self, filename, route_algo, traffic="uniform", step=1, inj_rate=0.01, cur_time=1000):
       config_content = f""" 
@@ -304,7 +304,7 @@ class GA_algo:
         best_score_over_history = best_score
         print(f"new best score!: {best_score_over_history}")
       
-      if best_chrom is not None:
+      if best_chrom is not None and gen % 10 == 0:
         best_paths = self.decode_chromosome_to_paths(best_chrom)
         self.save_paths_to_txt(best_paths, f'ga_paths_n{n}_k{k}_iter{gen}.txt')
       
@@ -312,9 +312,9 @@ class GA_algo:
 
 if __name__ == "__main__":
   # define range for input
-  k = 3
+  k = 4
   n = 3
-  n_iter = 10 # num generations
+  n_iter = 100 # num generations
   n_bits = 3
   n_chrom = 2**n_bits  #population size
   r_cross = 0.2 #crossover rate

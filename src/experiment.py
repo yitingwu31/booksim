@@ -148,12 +148,13 @@ if __name__ == '__main__':
    # compare different GA iteration
    # ======================================
    routing_algo = "ga"
-   iterations = 10
-   traffic_pattern = ["uniform", "bitcomp", "diagonal", "tornado"]
-   inj_rate = [0.01 * i for i in range(1, 15)]
+   iterations = 100
+   traffic_pattern = ["uniform", "tornado"]
+   inj_rate = [0.01 * i for i in range(1, 100, 5)]
+   generations = range(0, iterations, 10)
    _type = 'Packet'
    
-   results = {f"ga_iter{gen}": {traffic: [] for traffic in traffic_pattern} for gen in range(iterations)}
+   results = {f"ga_iter{gen}": {traffic: [] for traffic in traffic_pattern} for gen in generations}
 
    k = 3
    n = 3
@@ -162,7 +163,7 @@ if __name__ == '__main__':
 
    for rate in inj_rate:
       for traffic in traffic_pattern:
-         for gen in range(iterations):
+         for gen in generations:
             path_txt = f"ga_paths_n{n}_k{k}_iter{gen}.txt"
             generate_config_file(config_file, k, n, "ga", traffic, rate, GA_path_file=path_txt)
             with open(f'log/temp_log.txt', 'w') as log_file:

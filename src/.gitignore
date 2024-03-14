@@ -5,16 +5,7 @@ y.tab.h
 *.o
 *.d
 watchlists/temp_*
-*.pkl
 stats_out/
 analysis/
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
 watchlists/
 *.txt
->>>>>>> Stashed changes
-=======
-watchlists/
-*.txt
->>>>>>> Stashed changes
