@@ -1,5 +1,13 @@
-BookSim Interconnection Network Simulator
+Deterministic Routing with Genetic Algorithm on BookSim
 =========================================
+
+This work focuses on the potential of using the genetic algorithm (GA) to explore possible routes and converge to an optimal routing solution in Network-on-Chip routing. 
+
+We implemented GA logistics with Python scripts and ran the simulation on BookSim.
+
+Final report [here](Report.pdf)
+
+---
 
 BookSim is a cycle-accurate interconnection network simulator.
 Originally developed for and introduced with the [Principles and Practices of Interconnection Networks](http://cva.stanford.edu/books/ppin/) book, its functionality has since been continuously extended.
